@@ -776,49 +776,66 @@ h3 { font-size: 1.7em; }
     color: #28a745;
     margin: 25px 0;
 }
+/* style.css */
 
-
-/* Custom Message Box (for displayMessage function) */
 .custom-message-box {
     position: fixed;
-    bottom: 25px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #333;
-    color: white;
-    padding: 18px 30px; /* Larger padding */
-    border-radius: 10px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); /* Deeper shadow */
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     opacity: 0;
-    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-    min-width: 350px; /* Wider box */
-    text-align: center;
-    font-size: 1.2em; /* Larger font */
-    pointer-events: none; /* Allows clicks to pass through when not visible */
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
 }
 
 .custom-message-box.show {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
-
-.custom-message-box.success {
-    background-color: #28a745;
-}
-
-.custom-message-box.error {
-    background-color: #dc3545;
-}
-
-.custom-message-box.warning {
-    background-color: #ffc107;
-    color: #333;
+    visibility: visible;
 }
 
 .custom-message-box.info {
-    background-color: #17a2b8;
+    background-color: #17a2b8; /* Blue for info */
 }
+
+.custom-message-box.success {
+    background-color: #28a745; /* Green for success */
+}
+
+.custom-message-box.warning {
+    background-color: #ffc107; /* Orange for warning */
+    color: #333; /* Darker text for contrast */
+}
+
+.custom-message-box.error {
+    background-color: #dc3545; /* Red for error */
+}
+
+/* For status badges in service center dashboard */
+.badge {
+    display: inline-block;
+    padding: .35em .65em;
+    font-size: .75em;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25rem;
+}
+
+.badge-info { background-color: #17a2b8; }
+.badge-success { background-color: #28a745; }
+.badge-danger { background-color: #dc3545; }
+
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
