@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuickCar Service</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome for icons (stars, etc.) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
 
-    <!-- Language Selection Screen -->
     <div id="language-selection-screen" class="screen">
         <div class="lang-container">
             <h2>Select Your Language</h2>
@@ -22,7 +20,6 @@
         </div>
     </div>
 
-    <!-- Customer Authentication Screen -->
     <div id="customer-auth-screen" class="screen auth-screen">
         <div class="auth-container">
             <div class="auth-toggle">
@@ -30,7 +27,6 @@
                 <button class="toggle-btn" onclick="showCustomerAuth('register')">Register</button>
             </div>
 
-            <!-- Customer Login Form -->
             <form id="customerLoginForm" class="auth-form">
                 <h2>Customer Login</h2>
                 <div class="input-group">
@@ -50,7 +46,6 @@
                 <p class="auth-switch">Are you a Service Center? <span onclick="showScreen('service-center-auth-screen')">Login Here</span></p>
             </form>
 
-            <!-- Customer Registration Form (initially hidden) -->
             <form id="customerRegisterForm" class="auth-form" style="display:none;">
                 <h2>Customer Register</h2>
                 <div class="input-group">
@@ -71,7 +66,6 @@
         </div>
     </div>
 
-    <!-- Service Center Authentication Screen -->
     <div id="service-center-auth-screen" class="screen auth-screen" style="display:none;">
         <div class="auth-container">
             <h2>Service Center Login</h2>
@@ -91,7 +85,6 @@
         </div>
     </div>
 
-    <!-- Main App Container -->
     <div class="app-container" style="display:none;">
         <nav class="navbar">
             <div class="logo">
@@ -99,19 +92,21 @@
                 QuickCar
             </div>
             <ul class="nav-links">
-                <li class="customer-nav-item"><a href="#home-section" class="nav-link active" data-translate="nav_home">Home</a></li>
-                <li class="customer-nav-item"><a href="#book-service-section" class="nav-link" data-translate="nav_book_service">Book Service</a></li>
-                <li class="customer-nav-item"><a href="#payment-section" class="nav-link" data-translate="nav_payments">Payments</a></li>
-                <li class="customer-nav-item"><a href="#feedback-section" class="nav-link" data-translate="nav_feedback">Feedback</a></li>
-                <li class="customer-nav-item"><a href="#contact-section" class="nav-link" data-translate="nav_contact">Contact Us</a></li>
-                <li class="customer-nav-item"><a href="#profile-section" class="nav-link" data-translate="nav_profile">Profile</a></li>
-                <li class="customer-nav-item"><a href="#chat-section" class="nav-link" data-translate="nav_chat">Chat</a></li>
+                <li class="customer-nav-item"><a href="#home-section" class="nav-link active" onclick="showContentSection('home-section')" data-translate="nav_home">Home</a></li>
+                <li class="customer-nav-item"><a href="#book-service-section" class="nav-link" onclick="showContentSection('book-service-section')" data-translate="nav_book_service">Book Service</a></li>
+                <li class="customer-nav-item"><a href="#payment-section" class="nav-link" onclick="showContentSection('payment-section')" data-translate="nav_payments">Payments</a></li>
+                <li class="customer-nav-item"><a href="#feedback-section" class="nav-link" onclick="showContentSection('feedback-section')" data-translate="nav_feedback">Feedback</a></li>
+                <li class="customer-nav-item"><a href="#contact-section" class="nav-link" onclick="showContentSection('contact-section')" data-translate="nav_contact">Contact Us</a></li>
+                <li class="customer-nav-item"><a href="#profile-section" class="nav-link" onclick="showContentSection('profile-section')" data-translate="nav_profile">Profile</a></li>
+                <li class="customer-nav-item"><a href="#chat-section" class="nav-link" onclick="showContentSection('chat-section')" data-translate="nav_chat">Chat</a></li>
+                <li id="serviceCenterDashboardNavLink" class="service-center-nav-item" style="display: none;">
+                    <a href="#service-center-dashboard" class="nav-link" onclick="showContentSection('service-center-dashboard')" data-translate="nav_dashboard">Dashboard</a>
+                </li>
             </ul>
             <button id="logoutBtn" class="btn logout-button">Logout</button>
         </nav>
 
         <main class="content">
-            <!-- Home Section -->
             <section id="home-section" class="content-section active">
                 <div class="hero-section">
                     <h1 data-translate="hero_heading">Experience Hassle-Free Car Servicing!</h1>
@@ -148,13 +143,17 @@
                 <div class="testimonials-section">
                     <h2>What Our Customers Say</h2>
                     <ul id="testimonialList">
-                        <!-- Testimonials will be loaded here dynamically -->
                         <li id="noTestimonialsMessage" class="empty-message">No testimonials yet. Be the first to leave feedback!</li>
                     </ul>
                 </div>
+
+                <div class="loyalty-points-section">
+                    <h3>Your Loyalty Points</h3>
+                    <p>Current Balance: <span id="customerPointsDisplay">0</span> points</p>
+                    <button id="convertPointsBtn" class="btn btn-secondary">Convert 500 Points to Cash</button>
+                </div>
             </section>
 
-            <!-- Book Service Section -->
             <section id="book-service-section" class="content-section">
                 <h2>Book a Service</h2>
                 <form id="serviceBookingForm" class="service-form">
@@ -203,7 +202,6 @@
                 </form>
             </section>
 
-            <!-- Payments Section -->
             <section id="payment-section" class="content-section">
                 <h2>Make a Payment</h2>
                 <div class="payment-summary">
@@ -234,10 +232,8 @@
                     </div>
                     <button type="submit" class="btn">Pay Now</button>
                 </form>
-                <div id="paymentStatus" class="message-box"></div>
-            </section>
+                </section>
 
-            <!-- Feedback Section -->
             <section id="feedback-section" class="content-section">
                 <h2>Leave Your Feedback</h2>
                 <form id="feedbackForm" class="feedback-form">
@@ -263,7 +259,6 @@
                 </form>
             </section>
 
-            <!-- Contact Us Section -->
             <section id="contact-section" class="content-section">
                 <h2>Contact Us</h2>
                 <div class="contact-info">
@@ -289,7 +284,6 @@
                 </form>
             </section>
 
-            <!-- Profile Section -->
             <section id="profile-section" class="content-section">
                 <h2>My Profile</h2>
                 <form id="profileForm" class="profile-form">
@@ -330,7 +324,6 @@
                 </form>
             </section>
 
-            <!-- Chat Section -->
             <section id="chat-section" class="content-section">
                 <h2>Chat with Service Center</h2>
                 <div class="chat-container">
@@ -338,8 +331,7 @@
                         <div class="message received">
                             <p>Service Center: Hello! How can we help you today?</p>
                         </div>
-                        <!-- More messages will be appended here -->
-                    </div>
+                        </div>
                     <div class="chat-input-group">
                         <input type="text" id="chatInput" placeholder="Type your message...">
                         <button class="btn" id="chatSendBtn">Send</button>
@@ -347,74 +339,34 @@
                 </div>
             </section>
 
-            <!-- Service Center Dashboard (hidden for customers) -->
             <section id="service-center-dashboard" class="content-section">
                 <h2>Service Center Dashboard</h2>
                 <div class="dashboard-grid">
                     <div class="dashboard-card">
                         <h3>Pending Service Requests</h3>
                         <ul id="serviceRequestsList">
-                            <!-- Service requests will be dynamically added here -->
                             <li id="noRequestsMessage" class="empty-message">No pending service requests.</li>
                         </ul>
                     </div>
                     <div class="dashboard-card">
                         <h3>Customer Feedback</h3>
                         <ul id="customerFeedbackList">
-                            <!-- Customer feedback will be dynamically added here -->
                             <li id="noFeedbackMessage" class="empty-message">No customer feedback yet.</li>
                         </ul>
                     </div>
                     <div class="dashboard-card">
                         <h3>Payment History</h3>
                         <ul id="paymentHistoryList">
-                            <!-- Payment history will be dynamically added here -->
                             <li id="noPaymentHistoryMessage" class="empty-message">No payment history yet.</li>
                         </ul>
                     </div>
-                    <div class="dashboard-card points-card">
-                        <h3>Loyalty Points Balance</h3>
-                        <p id="centerPointsBalance">0 points</p>
-                        <button class="btn btn-secondary" onclick="convertCenterPoints()">Convert Points to Cash</button>
                     </div>
-                </div>
             </section>
         </main>
     </div>
 
-    <!-- Custom Message Box for notifications -->
     <div id="customMessageBox" class="custom-message-box"></div>
 
-    <!-- Firebase v9+ Modular SDKs -->
-    <script type="module">
-      // Import the functions from Firebase Modular SDK
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-      import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-      import { getDatabase } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
-      // Your Firebase Configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyDgGaOi-lNe9vNg72fNag1C6hioB2qqnMU", // <-- REPLACE THIS
-        authDomain: "service-prepareing.firebaseapp.com", // <-- REPLACE THIS
-        projectId: "service-prepareing", // <-- REPLACE THIS
-        databaseURL: "https://service-prepareing-default-rtdb.firebaseio.com", // <-- REPLACE THIS
-        storageBucket: "service-prepareing.firebasestorage.app", // <-- REPLACE THIS
-        messagingSenderId: "295345065007", // <-- REPLACE THIS
-        appId: "1:295345065007:web:0eb9463c2f0b73ff4b4ada", // <-- REPLACE THIS
-        measurementId: "G-W68Y5N8TLD" // <-- REPLACE THIS (Optional)
-      };
-
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      // Expose auth and database instances globally so script.js can access them
-      window.firebaseAuth = getAuth(app);
-      window.firebaseDB = getDatabase(app);
-
-      console.log("Firebase v9+ Modular SDK initialized in index.html.");
-    </script>
-
-    <!-- Your custom JavaScript file -->
-    <!-- Ensure this is also a module to use import/export syntax -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
