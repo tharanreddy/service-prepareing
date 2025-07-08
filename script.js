@@ -23,15 +23,25 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 // --- Firebase Configuration (IMPORTANT: REPLACE WITH YOUR ACTUAL CONFIG) ---
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com" // Ensure this is correct for Realtime DB
+  apiKey: "AIzaSyDgGaOi-lNe9vNg72fNag1C6hioB2qqnMU",
+  authDomain: "service-prepareing.firebaseapp.com",
+  projectId: "service-prepareing",
+  storageBucket: "service-prepareing.appspot.com", // ✅ Fixed here
+  messagingSenderId: "295345065007",
+  appId: "1:295345065007:web:0eb9463c2f0b73ff4b4ada",
+  measurementId: "G-W68Y5N8TLD"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
