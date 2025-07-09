@@ -1045,4 +1045,3 @@ document.querySelectorAll('.nav-link').forEach(link => {
         const targetId = this.getAttribute('href').substring(1); // Remove '#'
         showContentSection(targetId); // Call the existing section switcher
     });
-});
