@@ -184,3 +184,30 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('serviceType')?.dispatchEvent(new Event('change'));
     if (currentUserRole === 'customer') loadProfileData();
 });
+
+// quickcar-app-logic.js
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
+import { getDatabase, ref, push, set, onChildAdded } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-auth.js";
+
+// ✅ Your Firebase config (update this with your actual values)
+const firebaseConfig = {
+  apiKey: "AIzaSyDgGaOi-lNe9vNg72fNag1C6hioB2qqnMU",
+  authDomain: "service-prepareing.firebaseapp.com",
+  projectId: "service-prepareing",
+  storageBucket: "service-prepareing.appspot.com",
+  messagingSenderId: "295345065007",
+  appId: "1:295345065007:web:0eb9463c2f0b73ff4b4ada",
+  measurementId: "G-W68Y5N8TLD",
+  databaseURL: "https://service-prepareing-default-rtdb.firebaseio.com" // add this if not present
+};
+
+// ✅ Initialize Firebase services
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const auth = getAuth(app);
+
+// ✅ Make them available globally if needed
+window.database = database;
+window.auth = auth;
