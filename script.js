@@ -1038,4 +1038,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ensure the auth forms show the login by default
     showCustomerAuth('login');
+    // Handle nav link clicks to switch content sections
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent anchor default jump
+        const targetId = this.getAttribute('href').substring(1); // Remove '#'
+        showContentSection(targetId); // Call the existing section switcher
+    });
 });
