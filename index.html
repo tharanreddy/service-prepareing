@@ -65,7 +65,7 @@
                     <label for="customerRegisterPassword">Password:</label>
                     <input type="password" id="customerRegisterPassword" required>
                 </div>
-                <button id="customerRegisterBtn" type="submit" class="btn">Register</button
+                <button type="submit" class="btn">Register</button>
                 <p class="auth-switch">Already have an account? <span onclick="showCustomerAuth('login')">Login</span></p>
             </form>
         </div>
@@ -103,12 +103,11 @@
                 <li class="customer-nav-item"><a href="#book-service-section" class="nav-link" data-translate="nav_book_service">Book Service</a></li>
                 <li class="customer-nav-item"><a href="#payment-section" class="nav-link" data-translate="nav_payments">Payments</a></li>
                 <li class="customer-nav-item"><a href="#feedback-section" class="nav-link" data-translate="nav_feedback">Feedback</a></li>
-                <li class="customer-nav-item"><a href="#contact-info" class="nav-link" data-translate="nav_contact">Contact Us</a></li>
+                <li class="customer-nav-item"><a href="#contact-section" class="nav-link" data-translate="nav_contact">Contact Us</a></li>
                 <li class="customer-nav-item"><a href="#profile-section" class="nav-link" data-translate="nav_profile">Profile</a></li>
                 <li class="customer-nav-item"><a href="#chat-section" class="nav-link" data-translate="nav_chat">Chat</a></li>
             </ul>
             <button id="logoutBtn" class="btn logout-button">Logout</button>
-            
         </nav>
 
         <main class="content">
@@ -260,8 +259,7 @@
                         <label for="feedbackMessage">Your Message:</label>
                         <textarea id="feedbackMessage" rows="5" placeholder="Share your experience..." required></textarea>
                     </div>
-                   <button id="submitFeedbackBtn" type="submit" class="btn">Submit Feedback</button>
-
+                    <button type="submit" class="btn">Submit Feedback</button>
                 </form>
             </section>
 
@@ -287,8 +285,7 @@
                         <label for="contactMessage">Your Message:</label>
                         <textarea id="contactMessage" rows="5" required></textarea>
                     </div>
-                  <button id="sendMessageBtn" type="submit" class="btn">Send Message</button>
-
+                    <button type="submit" class="btn">Send Message</button>
                 </form>
             </section>
 
@@ -419,8 +416,5 @@
     <!-- Your custom JavaScript file -->
     <!-- Ensure this is also a module to use import/export syntax -->
     <script type="module" src="script.js"></script>
-    <script src="quickcar-app-logic.js"></script>
-
-
 </body>
 </html>
