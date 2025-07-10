@@ -1004,38 +1004,25 @@ function displayMessage(message, type = 'info', duration = 3000) {
 
 // --- DOMContentLoaded for initial setup ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Initial display based on current user role or language selection
-    currentUserRole = localStorage.getItem('currentUserRole');
-    currentUserName = localStorage.getItem('currentUserName');
-
-    // onAuthStateChanged listener handles the initial screen logic once Firebase has a user state.
-    // If Firebase isn't available/connected, this fallback will manage initial screen:
-    // This block runs if the page loads and Firebase Auth hasn't yet determined a user state.
-    // It's a fallback for initial display before onAuthStateChanged fires.
-    if (!auth.currentUser && !currentUserRole) { // If no current Firebase user and no role in localStorage
-        showScreen('language-selection-screen');
-    } else if (currentUserRole) { // If a role is in localStorage (e.g., reloaded page)
-        showScreen('app-container');
-        if (currentUserRole === 'serviceCenter') {
-            showContentSection('service-center-dashboard');
-            renderServiceRequests(); // Render requests if Firebase not yet loaded by listener
-            renderFeedbacks();
-            renderPaymentHistory();
-        } else {
-            showContentSection('home-section');
-        }
-        setupFirebaseChatListener(); // Set up chat for persistent sessions
-    }
-
+    // ... your existing code
 
     // Initialize the "Other Service Type" toggle
     document.getElementById('serviceType').dispatchEvent(new Event('change'));
 
-    // Initialize profile data display on load for customer role
+    // Load profile data for customers
     if (currentUserRole === 'customer') {
         loadProfileData();
     }
 
-    // Ensure the auth forms show the login by default
+    // ✅ 👉 Add this block BELOW profile check but ABOVE showCustomerAuth:
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').slice(1); // remove the "#"
+            showContentSection(targetId);
+        });
+    });
+
+    // Show login form by default
     showCustomerAuth('login');
 });
