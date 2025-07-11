@@ -1,31 +1,801 @@
 /* General Body and HTML Reset */
-html, body {
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f7f6;
     color: #333;
-    height: 100%;
-    overflow: hidden; /* Prevent body scroll, app container will scroll */
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top */
+    min-height: 100vh; /* Ensure it takes full viewport height */
+    /* AI-generated futuristic car service background - General fallback */
+    background: url('https://image.pollinations.ai/prompt/futuristic%20car%20service%20garage%20with%20clean%20lines%20and%20soft%20lighting%2C%20minimalist%2C%20high-tech%2C%20subtle%20motion%20blur?width=1920&height=1080&seed=123') no-repeat center center/cover fixed;
+    transition: background-image 0.5s ease-in-out; /* Smooth transition for background changes */
 }
 
-/* Custom Message Box Styles */
+/* Screen Containers (for auth, language, and main app) */
+.screen {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100; /* Ensure screens are on top */
+    background-color: rgba(0, 0, 0, 0.7); /* Dark overlay for screens */
+}
+
+.auth-screen {
+    /* Specific AI-generated background for auth screen */
+    background: url('https://image.pollinations.ai/prompt/sleek%20car%20dashboard%20interface%20login%20screen%2C%20digital%20glow%2C%20futuristic%20blurred%20cityscape%20background%2C%20cyberpunk%20elements?width=1920&height=1080&seed=456') no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1200px; /* Max width for the main app content */
+    min-height: 100vh;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.3); /* Stronger shadow for main app */
+    background-color: rgba(255, 255, 255, 0.95); /* Slightly transparent white for app content */
+    border-radius: 12px; /* More rounded corners */
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #0056b3; /* Darker blue for navbar */
+    padding: 15px 30px;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Stronger shadow */
+    flex-wrap: wrap;
+    position: sticky; /* Make navbar sticky */
+    top: 0;
+    z-index: 50; /* Ensure it stays above content */
+}
+
+.navbar .logo {
+    display: flex;
+    align-items: center;
+    font-size: 26px; /* Slightly larger logo */
+    font-weight: bold;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Subtle text shadow */
+}
+
+.navbar .logo img {
+    margin-right: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff; /* White border around logo */
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 25px;
+}
+
+.nav-links li {
+    display: list-item;
+}
+
+.nav-links .nav-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 10px 15px; /* Slightly larger padding */
+    border-radius: 8px; /* More rounded links */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.nav-links .nav-link:hover,
+.nav-links .nav-link.active {
+    background-color: #004494;
+    transform: translateY(-3px); /* More pronounced lift effect */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Shadow on hover/active */
+}
+
+.logout-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logout-button:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+
+/* Main Content Area */
+.content {
+    padding: 30px;
+    flex-grow: 1;
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly more transparent */
+}
+
+.content-section {
+    display: none;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px; /* More rounded corners */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Stronger shadow */
+    margin-bottom: 25px; /* More space between sections */
+    animation: fadeIn 0.5s ease-out; /* Fade-in animation */
+}
+
+.content-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Headings */
+h1, h2, h3 {
+    color: #0056b3;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-weight: 700; /* Bolder headings */
+    text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.05); /* Subtle text shadow */
+}
+
+h1 { font-size: 2.8em; }
+h2 { font-size: 2.2em; }
+h3 { font-size: 1.7em; }
+
+/* Buttons */
+.btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 14px 30px; /* Larger padding */
+    border-radius: 8px; /* More rounded */
+    cursor: pointer;
+    font-size: 17px; /* Slightly larger font */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 18px; /* More margin */
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2); /* Blue shadow for primary buttons */
+}
+
+.btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+    box-shadow: 0 6px 12px rgba(108, 117, 125, 0.3);
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+}
+.btn-danger:hover {
+    background-color: #c82333;
+    box-shadow: 0 6px 12px rgba(220, 53, 69, 0.3);
+}
+
+.btn-google {
+    background-color: #dd4b39; /* Google red */
+    box-shadow: 0 4px 8px rgba(221, 75, 57, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.btn-google:hover {
+    background-color: #c23321;
+    box-shadow: 0 6px 12px rgba(221, 75, 57, 0.3);
+}
+.btn-google i {
+    font-size: 1.2em;
+}
+
+/* Forms and Input Groups */
+.input-group {
+    margin-bottom: 22px; /* More spacing */
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600; /* Bolder labels */
+    color: #444;
+}
+
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group input[type="password"],
+.input-group input[type="tel"],
+.input-group input[type="date"],
+.input-group input[type="time"],
+.input-group input[type="number"],
+.input-group select,
+.input-group textarea {
+    width: 100%;
+    padding: 14px; /* Larger padding */
+    border: 1px solid #c2cbd2; /* Slightly darker border */
+    border-radius: 8px; /* More rounded */
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: #fcfcfc; /* Light background for inputs */
+}
+
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.3rem rgba(0, 123, 255, 0.35); /* Stronger focus shadow */
+    outline: none;
+}
+
+/* Auth Screens */
+.auth-container {
+    background-color: rgba(255, 255, 255, 0.98); /* Nearly opaque white */
+    padding: 45px; /* More padding */
+    border-radius: 15px; /* More rounded corners */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); /* Deeper shadow */
+    width: 100%;
+    max-width: 480px; /* Slightly wider */
+    text-align: center;
+    position: relative;
+    animation: popIn 0.6s ease-out; /* Pop-in animation */
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.auth-toggle {
+    display: flex;
+    margin-bottom: 30px; /* More margin */
+    border-bottom: 2px solid #eee; /* Thicker border */
+}
+
+.auth-toggle .toggle-btn {
+    flex: 1;
+    padding: 18px 0; /* Larger padding */
+    border: none;
+    background-color: transparent;
+    font-size: 19px; /* Larger font */
+    font-weight: 700; /* Bolder */
+    cursor: pointer;
+    color: #777; /* Softer grey */
+    transition: color 0.3s ease, border-bottom 0.3s ease;
+}
+
+.auth-toggle .toggle-btn.active {
+    color: #007bff;
+    border-bottom: 4px solid #007bff; /* Thicker active border */
+}
+
+.auth-form h2 {
+    margin-bottom: 35px; /* More margin */
+    color: #0056b3;
+    font-size: 2em; /* Larger heading */
+}
+
+.auth-link, .auth-switch {
+    margin-top: 25px; /* More margin */
+    font-size: 15px; /* Slightly larger font */
+    color: #666;
+}
+
+.auth-link span, .auth-switch span {
+    color: #007bff;
+    cursor: pointer;
+    font-weight: 600; /* Bolder links */
+}
+.auth-link span:hover, .auth-switch span:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+.divider {
+    margin: 25px 0;
+    position: relative;
+    font-size: 14px;
+    color: #aaa;
+}
+.divider::before,
+.divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: #e0e0e0;
+}
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+
+/* Language Selection */
+.lang-container {
+    background-color: rgba(255, 255, 255, 0.98);
+    padding: 45px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    animation: popIn 0.6s ease-out;
+}
+
+.lang-container h2 {
+    margin-bottom: 35px;
+    color: #0056b3;
+}
+
+.lang-btn {
+    display: block;
+    width: calc(100% - 40px);
+    padding: 18px; /* Larger padding */
+    margin: 18px auto; /* More margin */
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 19px; /* Larger font */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+}
+
+.lang-btn:hover {
+    background-color: #218838;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* Home Section Styles */
+.hero-section {
+    /* AI-generated hero background */
+    background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url('https://image.pollinations.ai/prompt/sleek%20sports%20car%20in%20high-tech%20garage%20with%20glowing%20lights%2C%20dynamic%20lighting%2C%20futuristic%2C%20cinematic?width=1200&height=400&seed=789') no-repeat center center/cover;
+    color: white;
+    padding: 70px 50px; /* More padding */
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 35px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Stronger text shadow */
+}
+
+.hero-section h1 {
+    color: white;
+    font-size: 4em; /* Larger font */
+    margin-bottom: 20px;
+    font-weight: 800;
+}
+
+.hero-section p {
+    font-size: 1.3em; /* Larger font */
+    margin-bottom: 35px;
+}
+
+.features-section {
+    padding: 25px 0;
+    text-align: center;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Slightly larger min-width */
+    gap: 30px; /* More space */
+    margin-top: 35px;
+}
+
+.feature-item {
+    background-color: #e9f5ff;
+    padding: 30px; /* More padding */
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #d0e8ff; /* Subtle border */
+}
+
+.feature-item:hover {
+    transform: translateY(-7px); /* More pronounced lift */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.feature-item i {
+    font-size: 4em; /* Larger icons */
+    color: #007bff;
+    margin-bottom: 18px;
+}
+
+.feature-item h3 {
+    margin-top: 0;
+    color: #0056b3;
+    font-size: 1.6em; /* Larger heading */
+}
+
+.testimonials-section {
+    padding: 25px 0;
+    text-align: center;
+}
+
+#testimonialList {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Slightly larger min-width */
+    gap: 25px; /* More space */
+    margin-top: 35px;
+}
+
+#testimonialList li {
+    background-color: #f8f9fa;
+    padding: 25px; /* More padding */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 170px; /* Taller items */
+    border: 1px solid #f0f0f0;
+}
+
+#testimonialList li .rating {
+    color: #ffc107;
+    margin-bottom: 12px;
+    font-size: 1.2em; /* Larger stars */
+}
+
+#testimonialList li p {
+    font-style: italic;
+    margin-bottom: 12px;
+    flex-grow: 1;
+    color: #555;
+}
+
+#testimonialList li .author {
+    font-weight: bold;
+    color: #666;
+    text-align: right;
+    font-style: normal;
+    font-size: 0.95em;
+}
+
+.empty-message {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    grid-column: 1 / -1;
+    padding: 25px;
+    font-size: 1.1em;
+}
+
+/* Service Booking Form */
+.service-form, .payment-form, .feedback-form, .contact-form, .profile-form {
+    max-width: 650px; /* Wider forms */
+    margin: 25px auto;
+    padding: 35px; /* More padding */
+    background-color: #fdfdfd;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Payment Section */
+.payment-summary {
+    background-color: #e6f7ff;
+    border: 1px solid #b3e0ff;
+    padding: 25px; /* More padding */
+    border-radius: 10px;
+    margin-bottom: 30px; /* More margin */
+    text-align: center;
+    font-size: 1.2em; /* Larger font */
+    color: #004494;
+}
+
+.payment-summary p {
+    margin: 10px 0;
+}
+
+.payment-summary strong {
+    color: #0056b3;
+}
+
+.info-text {
+    font-size: 0.95em;
+    color: #777;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    background-color: #fff3cd; /* Light yellow for info */
+    border-left: 5px solid #ffc107;
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+
+/* Feedback Section - Star Rating */
+.star-rating {
+    font-size: 2.5em; /* Larger stars */
+    color: #ccc;
+    cursor: pointer;
+    display: flex;
+    gap: 8px; /* More space between stars */
+    margin-top: 15px;
+}
+
+.star-rating .fas {
+    color: #ffc107;
+}
+
+/* Contact Us Section */
+.contact-info {
+    background-color: #e9f5ff;
+    border-left: 5px solid #007bff;
+    padding: 25px;
+    margin-bottom: 35px;
+    border-radius: 10px;
+}
+
+.contact-info p {
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    font-size: 1.15em;
+}
+
+.contact-info i {
+    margin-right: 18px; /* More space */
+    color: #007bff;
+    font-size: 1.5em; /* Larger icon */
+}
+
+/* Profile Section */
+.profile-form h3 {
+    margin-top: 35px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 8px;
+    color: #0066cc;
+}
+
+/* Chat Section */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 650px; /* Taller chat window */
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f9f9f9;
+    max-width: 750px; /* Wider chat */
+    margin: 25px auto;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.chat-messages {
+    flex-grow: 1;
+    padding: 25px; /* More padding */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px; /* More space between messages */
+    background-color: #eef5f9;
+}
+
+.message {
+    max-width: 70%; /* Slightly narrower messages */
+    padding: 14px 20px; /* Larger padding */
+    border-radius: 22px; /* More rounded */
+    word-wrap: break-word;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: relative; /* For timestamp or sender name */
+}
+
+.message.sent {
+    align-self: flex-end;
+    background-color: #007bff;
+    color: white;
+    border-bottom-right-radius: 8px; /* More pronounced corner */
+    animation: slideInRight 0.3s ease-out;
+}
+
+.message.received {
+    align-self: flex-start;
+    background-color: #e0e0e0;
+    color: #333;
+    border-bottom-left-radius: 8px; /* More pronounced corner */
+    animation: slideInLeft 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.message p {
+    margin: 0;
+    font-size: 1.05em;
+}
+
+.chat-input-group {
+    display: flex;
+    padding: 18px 25px; /* More padding */
+    border-top: 1px solid #e0e0e0;
+    background-color: #fff;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05); /* Top shadow */
+}
+
+.chat-input-group input {
+    flex-grow: 1;
+    padding: 14px; /* Larger padding */
+    border: 1px solid #ccc;
+    border-radius: 28px; /* More rounded input field */
+    margin-right: 12px;
+    font-size: 1.05em;
+}
+
+.chat-input-group button {
+    padding: 14px 28px;
+    border-radius: 28px; /* More rounded send button */
+    font-size: 1.05em;
+}
+
+/* Service Center Dashboard */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    margin-top: 25px;
+}
+
+.dashboard-card {
+    background-color: #fefefe;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    border-top: 6px solid #007bff;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-card h3 {
+    color: #0056b3;
+    margin-bottom: 25px;
+    font-size: 1.5em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 12px;
+}
+
+.dashboard-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.dashboard-card ul li {
+    background-color: #f0f8ff;
+    padding: 18px; /* More padding */
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    border-left: 5px solid #4CAF50; /* Green for new requests */
+    transition: background-color 0.2s ease;
+}
+
+.dashboard-card ul li:last-child {
+    margin-bottom: 0;
+}
+
+.dashboard-card ul li:hover {
+    background-color: #e0f2ff;
+}
+
+.request-details, .request-status {
+    margin: 6px 0;
+    font-size: 1em;
+    color: #444;
+}
+
+.request-actions {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.request-actions .btn {
+    padding: 9px 18px;
+    font-size: 0.95em;
+    margin-top: 0;
+}
+
+.request-status strong {
+    color: #0056b3;
+}
+
+.dashboard-card ul li[id^="request-"] {
+    border-left-color: #007bff;
+}
+.dashboard-card ul li .request-status strong:contains("Accepted") {
+    color: #28a745;
+}
+.dashboard-card ul li .request-status strong:contains("Rejected") {
+    color: #dc3545;
+}
+
+.points-card {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    border-top-color: #28a745; /* Green border for points card */
+}
+.points-card p {
+    font-size: 3em; /* Larger points display */
+    font-weight: bold;
+    color: #28a745;
+    margin: 25px 0;
+}
+
+
+/* Custom Message Box (for displayMessage function) */
 .custom-message-box {
     position: fixed;
-    top: 20px;
+    bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 15px 25px;
-    border-radius: 8px;
-    font-weight: bold;
+    background-color: #333;
     color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 18px 30px; /* Larger padding */
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); /* Deeper shadow */
     z-index: 1000;
-    display: none; /* Hidden by default */
     opacity: 0;
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-    min-width: 250px;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    min-width: 350px; /* Wider box */
     text-align: center;
+    font-size: 1.2em; /* Larger font */
+    pointer-events: none; /* Allows clicks to pass through when not visible */
 }
 
 .custom-message-box.show {
@@ -34,843 +804,132 @@ html, body {
 }
 
 .custom-message-box.success {
-    background-color: #4CAF50; /* Green */
+    background-color: #28a745;
 }
 
 .custom-message-box.error {
-    background-color: #f44336; /* Red */
-}
-
-.custom-message-box.info {
-    background-color: #2196F3; /* Blue */
-}
-
-/* Screen Management */
-.screen {
-    display: none; /* Hidden by default, shown by JS */
-    width: 100%;
-    height: 100vh;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); /* Blue gradient */
-    color: white;
-    box-sizing: border-box;
-}
-
-/* Authentication Forms */
-.auth-container {
-    background-color: #ffffff;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    width: 100%;
-    max-width: 400px;
-    box-sizing: border-box;
-    position: relative;
-}
-
-.auth-toggle {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 25px;
-    background-color: #e9ecef;
-    border-radius: 8px;
-    padding: 5px;
-}
-
-.auth-toggle .toggle-btn {
-    flex: 1;
-    padding: 12px 15px;
-    border: none;
-    border-radius: 6px;
-    background-color: transparent;
-    color: #555;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.auth-toggle .toggle-btn.active {
-    background-color: #007bff;
-    color: white;
-    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
-}
-
-.auth-form h2 {
-    color: #333;
-    margin-bottom: 25px;
-    font-size: 1.8rem;
-    font-weight: 700;
-}
-
-.auth-form input[type="email"],
-.auth-form input[type="password"],
-.auth-form input[type="text"] {
-    width: calc(100% - 20px);
-    padding: 12px 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 1rem;
-}
-
-.auth-form .btn {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    background-color: #007bff;
-    color: white;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.auth-form .btn:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-}
-
-.auth-form .forgot-password {
-    display: block;
-    margin-top: 15px;
-    color: #007bff;
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.auth-form .forgot-password:hover {
-    text-decoration: underline;
-}
-
-.auth-form .or-separator {
-    margin: 20px 0;
-    color: #6c757d;
-    font-size: 0.9rem;
-    position: relative;
-}
-
-.auth-form .or-separator::before,
-.auth-form .or-separator::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 40%;
-    height: 1px;
-    background-color: #dee2e6;
-}
-
-.auth-form .or-separator::before {
-    left: 0;
-}
-
-.auth-form .or-separator::after {
-    right: 0;
-}
-
-.auth-form .btn-google {
-    background-color: #db4437; /* Google Red */
-    margin-top: 10px;
-}
-
-.auth-form .btn-google:hover {
-    background-color: #c23321;
-}
-
-.auth-form .btn-google i {
-    margin-right: 8px;
-}
-
-.auth-form .role-switch {
-    margin-top: 25px;
-    color: #555;
-    font-size: 0.95rem;
-}
-
-.auth-form .role-switch a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.auth-form .role-switch a:hover {
-    text-decoration: underline;
-}
-
-/* App Container Layout */
-.app-container {
-    display: flex;
-    height: 100vh;
-    overflow: hidden; /* Prevent app-container scroll, content will scroll */
-}
-
-/* Sidebar */
-.sidebar {
-    width: 250px;
-    background-color: #2c3e50; /* Dark blue */
-    color: #ecf0f1;
-    padding: 20px 0;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar .logo {
-    font-size: 1.8rem;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 30px;
-    color: #3498db; /* Lighter blue for logo */
-}
-
-.sidebar .main-nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.sidebar .main-nav li {
-    margin-bottom: 10px;
-}
-
-.sidebar .main-nav .nav-link {
-    display: block;
-    padding: 15px 25px;
-    color: #ecf0f1;
-    text-decoration: none;
-    font-size: 1.1rem;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    border-left: 5px solid transparent;
-}
-
-.sidebar .main-nav .nav-link:hover,
-.sidebar .main-nav .nav-link.active {
-    background-color: #34495e; /* Slightly lighter dark blue */
-    color: #3498db; /* Lighter blue highlight */
-    border-left-color: #3498db;
-}
-
-.sidebar .logout-section {
-    margin-top: auto; /* Pushes logout button to the bottom */
-    padding: 20px;
-    text-align: center;
-}
-
-.sidebar .btn-logout {
-    background-color: #e74c3c; /* Red */
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-}
-
-.sidebar .btn-logout:hover {
-    background-color: #c0392b;
-}
-
-/* Main Content Area */
-.content {
-    flex-grow: 1;
-    padding: 30px;
-    overflow-y: auto; /* Enable scrolling for content */
-    background-color: #f9fbfb;
-}
-
-.content-section {
-    display: none; /* Hidden by default, shown by JS */
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    margin-bottom: 30px; /* Space between sections if multiple are visible (unlikely with current setup) */
-}
-
-.content-section.active {
-    display: block;
-}
-
-.content-section h2 {
-    color: #333;
-    margin-bottom: 25px;
-    font-size: 2rem;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 15px;
-}
-
-/* Hero Section (Home) */
-.hero-section {
-    text-align: center;
-    padding: 60px 20px;
-    background: url('https://via.placeholder.com/1200x400/3498db/ffffff?text=Car+Service+Banner') no-repeat center center/cover; /* Placeholder image */
-    border-radius: 10px;
-    color: white;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.hero-section h1 {
-    font-size: 3.5rem;
-    margin-bottom: 15px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.hero-section p {
-    font-size: 1.3rem;
-    margin-bottom: 30px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
-}
-
-.hero-section .btn-primary {
-    background-color: #2ecc71; /* Emerald Green */
-    color: white;
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.hero-section .btn-primary:hover {
-    background-color: #27ae60;
-    transform: translateY(-3px);
-}
-
-/* Form Styles (General) */
-.app-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.app-form .form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.app-form .form-group:nth-child(5), /* Select Service Type */
-.app-form .form-group:nth-child(6), /* Other Service Type */
-.app-form .form-group:nth-child(9), /* Payment method (assuming order) */
-.app-form .form-group:nth-child(10), /* Online payment fields */
-.app-form .form-group:nth-child(12), /* Feedback Service ID */
-.app-form .form-group:nth-child(13), /* Star Rating */
-.app-form .form-group:nth-child(14), /* Feedback Message */
-.app-form .form-group:nth-child(1), /* Contact name */
-.app-form .form-group:nth-child(2), /* Contact email */
-.app-form .form-group:nth-child(3), /* Contact subject */
-.app-form .form-group:nth-child(4), /* Contact message */
-.app-form .form-group:nth-child(1) /* Profile Name */ {
-    grid-column: span 2; /* Make these full width */
-}
-
-/* Adjustments for specific forms */
-#feedbackForm .form-group:nth-child(1),
-#feedbackForm .form-group:nth-child(2),
-#feedbackForm .form-group:nth-child(3) {
-    grid-column: span 2;
-}
-
-#contactForm .form-group {
-    grid-column: span 2;
-}
-
-#profileForm .form-group:nth-child(1), /* Name */
-#profileForm .form-group:nth-child(2), /* Email */
-#profileForm .form-group:nth-child(3), /* Mobile */
-#profileForm .form-group:nth-child(4) /* Address */ {
-    grid-column: span 2;
-}
-
-#profileForm h3 {
-    grid-column: span 2;
-    margin-top: 30px;
-    margin-bottom: 15px;
-    color: #555;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-
-
-.app-form label {
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #555;
-    font-size: 0.95rem;
-}
-
-.app-form input[type="text"],
-.app-form input[type="email"],
-.app-form input[type="tel"],
-.app-form input[type="date"],
-.app-form input[type="time"],
-.app-form input[type="number"],
-.app-form select,
-.app-form textarea {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-    transition: border-color 0.3s ease;
-}
-
-.app-form input:focus,
-.app-form select:focus,
-.app-form textarea:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-}
-
-.app-form button[type="submit"] {
-    grid-column: span 2; /* Make submit button full width */
-    padding: 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    margin-top: 15px;
-}
-
-.app-form button[type="submit"]:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-}
-
-/* Payment Section Specific */
-.payment-summary {
-    background-color: #e9f7ff; /* Light blue background */
-    border: 1px solid #cceeff;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-.payment-summary h3 {
-    color: #0056b3;
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.5rem;
-}
-
-.payment-summary p {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-}
-
-.payment-summary strong {
-    color: #333;
-}
-
-/* Star Rating for Feedback */
-.star-rating {
-    font-size: 1.8rem;
-    color: #fbc02d; /* Yellow for stars */
-    cursor: pointer;
-    margin-top: 5px;
-    margin-bottom: 15px;
-}
-
-.star-rating i {
-    margin-right: 5px;
-    transition: transform 0.2s ease;
-}
-
-.star-rating i:hover {
-    transform: scale(1.1);
-}
-
-/* Data Lists (for Feedback, Payments, Requests) */
-.data-list {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
-}
-
-.data-list li {
-    background-color: #fcfcfc;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 15px 20px;
-    margin-bottom: 15px;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.data-list li:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-}
-
-.data-list .empty-message {
-    text-align: center;
-    color: #6c757d;
-    font-style: italic;
-    padding: 20px;
-    background-color: #f0f0f0;
-    border-radius: 8px;
-}
-
-/* Specific styling for service requests */
-.request-item {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 10px 20px;
-    align-items: center;
-}
-
-.request-item p.request-details {
-    margin: 0;
-    font-size: 0.95rem;
-    color: #555;
-}
-
-.request-item p.request-status {
-    font-weight: bold;
-    grid-column: span 2; /* Status spans two columns */
-    margin-top: 10px;
-}
-
-.request-item .status-text {
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: white;
-}
-
-.request-item .status-pending { background-color: #ffc107; color: #333;} /* Yellow */
-.request-item .status-accepted { background-color: #28a745; } /* Green */
-.request-item .status-rejected { background-color: #dc3545; } /* Red */
-.request-item .status-completed { background-color: #6f42c1; } /* Purple */
-
-.request-item .request-actions {
-    grid-column: span 2; /* Actions span two columns */
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.request-item .request-actions .btn {
-    padding: 8px 15px;
-    font-size: 0.9rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.request-item .request-actions .btn-small {
-    background-color: #007bff;
-    color: white;
-    border: none;
-}
-
-.request-item .request-actions .btn-small:hover {
-    background-color: #0056b3;
-}
-
-.request-item .request-actions .btn-danger {
     background-color: #dc3545;
 }
 
-.request-item .request-actions .btn-danger:hover {
-    background-color: #c82333;
-}
-
-.request-item .request-actions .btn-secondary {
-    background-color: #6c757d;
-}
-
-.request-item .request-actions .btn-secondary:hover {
-    background-color: #5a6268;
-}
-
-/* Feedback List specific styling */
-.feedback-item-text {
-    margin-bottom: 5px;
-    font-size: 0.95rem;
+.custom-message-box.warning {
+    background-color: #ffc107;
     color: #333;
 }
 
-.feedback-item-text.rating-display {
-    font-size: 1.5rem;
-    color: #fbc02d;
-    margin-bottom: 10px;
+.custom-message-box.info {
+    background-color: #17a2b8;
 }
 
-.feedback-item-text.comment {
-    font-style: italic;
-    color: #555;
-    margin-bottom: 10px;
-    line-height: 1.4;
-}
-
-.feedback-item-text.meta-info {
-    font-size: 0.85rem;
-    color: #777;
-    text-align: right;
-    margin-top: 10px;
-    border-top: 1px dashed #eee;
-    padding-top: 8px;
-}
-
-/* Payment History List Specific */
-.payment-details {
-    margin-bottom: 5px;
-    font-size: 0.95rem;
-    color: #333;
-}
-
-/* Contact Info */
-.contact-info {
-    margin-top: 40px;
-    padding: 25px;
-    background-color: #e9f7ff;
-    border: 1px solid #cceeff;
-    border-radius: 8px;
-}
-
-.contact-info h3 {
-    color: #0056b3;
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.4rem;
-}
-
-.contact-info p {
-    margin-bottom: 8px;
-    font-size: 1.05rem;
-}
-
-/* Chat Section */
-.chat-box {
-    display: flex;
-    flex-direction: column;
-    height: 600px; /* Fixed height for chat box */
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    overflow: hidden;
-    background-color: #fdfdfd;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.chat-messages {
-    flex-grow: 1;
-    padding: 20px;
-    overflow-y: auto; /* Enable scrolling for messages */
-    background-color: #f5f5f5;
-}
-
-.message {
-    max-width: 70%;
-    padding: 10px 15px;
-    border-radius: 15px;
-    margin-bottom: 10px;
-    line-height: 1.4;
-    position: relative;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.message p {
-    margin: 0;
-    font-size: 0.95rem;
-}
-
-.message .timestamp {
-    font-size: 0.75rem;
-    color: #999;
-    margin-top: 5px;
-    display: block;
-    text-align: right;
-}
-
-.message.sent {
-    background-color: #dcf8c6; /* Light green */
-    align-self: flex-end; /* Pushes to the right */
-    margin-left: auto;
-    border-bottom-right-radius: 5px;
-}
-
-.message.received {
-    background-color: #e9e9eb; /* Light grey */
-    align-self: flex-start; /* Pushes to the left */
-    margin-right: auto;
-    border-bottom-left-radius: 5px;
-}
-
-.chat-input-area {
-    display: flex;
-    padding: 15px;
-    border-top: 1px solid #e0e0e0;
-    background-color: #ffffff;
-    gap: 10px;
-}
-
-.chat-input-area input {
-    flex-grow: 1;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 25px;
-    font-size: 1rem;
-}
-
-.chat-input-area button {
-    padding: 12px 20px;
-    border-radius: 25px;
-    font-size: 1rem;
-    white-space: nowrap; /* Prevent button text from wrapping */
-}
-
-/* Dashboard sections */
-.dashboard-section {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    margin-bottom: 30px;
-}
-
-.dashboard-section h3 {
-    color: #333;
-    margin-bottom: 20px;
-    font-size: 1.7rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-
-/* Responsive adjustments */
+/* Responsive Design */
 @media (max-width: 768px) {
-    .app-container {
+    .navbar {
         flex-direction: column;
+        gap: 15px;
+        padding: 15px;
     }
 
-    .sidebar {
+    .nav-links {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
         width: 100%;
-        height: auto;
-        padding: 15px 0;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        z-index: 100; /* Ensure sidebar is above content on smaller screens */
+        margin-top: 10px;
     }
 
-    .sidebar .logo {
-        margin-bottom: 15px;
+    .nav-links .nav-link {
+        width: calc(100% - 20px);
+        text-align: center;
     }
 
-    .sidebar .main-nav ul {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
+    .hero-section {
+        padding: 40px 20px;
     }
 
-    .sidebar .main-nav li {
-        margin: 5px 10px;
+    .hero-section h1 {
+        font-size: 2.8em;
     }
 
-    .sidebar .main-nav .nav-link {
-        padding: 10px 15px;
-        font-size: 0.95rem;
-        border-left: none;
-        border-bottom: 3px solid transparent;
+    .feature-grid {
+        grid-template-columns: 1fr;
     }
 
-    .sidebar .main-nav .nav-link:hover,
-    .sidebar .main-nav .nav-link.active {
-        border-left-color: transparent;
-        border-bottom-color: #3498db;
+    #testimonialList {
+        grid-template-columns: 1fr;
     }
 
-    .sidebar .logout-section {
-        margin-top: 15px;
-        padding: 10px;
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .service-form, .payment-form, .feedback-form, .contact-form, .profile-form {
+        padding: 25px;
+    }
+
+    .chat-container {
+        height: 500px; /* Adjust height for smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-container, .lang-container {
+        padding: 30px 20px;
+        max-width: 90%;
+    }
+
+    .auth-toggle .toggle-btn {
+        font-size: 16px;
+        padding: 10px 0;
+    }
+
+    .lang-btn {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .navbar .logo {
+        font-size: 20px;
+    }
+
+    .logout-button {
+        padding: 8px 15px;
+        font-size: 14px;
     }
 
     .content {
         padding: 20px;
-        overflow-y: auto;
     }
 
-    .auth-container {
-        padding: 30px 20px;
+    h1 { font-size: 2.2em; }
+    h2 { font-size: 1.8em; }
+    h3 { font-size: 1.4em; }
+
+    .btn {
+        padding: 12px 25px;
+        font-size: 15px;
     }
 
-    .app-form {
-        grid-template-columns: 1fr; /* Single column layout for forms */
+    .input-group input, .input-group select, .input-group textarea {
+        padding: 12px;
+        font-size: 15px;
     }
 
-    .app-form .form-group:nth-child(5), /* Select Service Type */
-    .app-form .form-group:nth-child(6), /* Other Service Type */
-    .app-form .form-group:nth-child(9), /* Payment method (assuming order) */
-    .app-form .form-group:nth-child(10), /* Online payment fields */
-    .app-form .form-group:nth-child(12), /* Feedback Service ID */
-    .app-form .form-group:nth-child(13), /* Star Rating */
-    .app-form .form-group:nth-child(14), /* Feedback Message */
-    .app-form .form-group:nth-child(1), /* Contact name */
-    .app-form .form-group:nth-child(2), /* Contact email */
-    .app-form .form-group:nth-child(3), /* Contact subject */
-    .app-form .form-group:nth-child(4), /* Contact message */
-    .app-form .form-group:nth-child(1) /* Profile Name */ {
-        grid-column: span 1;
+    .star-rating {
+        font-size: 2em;
     }
 
-    #feedbackForm .form-group:nth-child(1),
-    #feedbackForm .form-group:nth-child(2),
-    #feedbackForm .form-group:nth-child(3) {
-        grid-column: span 1;
+    .chat-input-group {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
     }
 
-    #contactForm .form-group {
-        grid-column: span 1;
+    .chat-input-group input {
+        margin-right: 0;
+        margin-bottom: 5px;
+        width: 100%;
     }
 
-    #profileForm .form-group:nth-child(1),
-    #profileForm .form-group:nth-child(2),
-    #profileForm .form-group:nth-child(3),
-    #profileForm .form-group:nth-child(4) {
-        grid-column: span 1;
-    }
-
-    #profileForm h3 {
-        grid-column: span 1;
-    }
-
-    .app-form button[type="submit"] {
-        grid-column: span 1;
-    }
-
-    .hero-section h1 {
-        font-size: 2.5rem;
-    }
-
-    .hero-section p {
-        font-size: 1rem;
-    }
-
-    .request-item {
-        grid-template-columns: 1fr; /* Single column on small screens */
-    }
-
-    .request-item p.request-status,
-    .request-item .request-actions {
-        grid-column: span 1;
-    }
-
-    .chat-box {
-        height: 400px;
+    .chat-input-group button {
+        width: 100%;
     }
 }
