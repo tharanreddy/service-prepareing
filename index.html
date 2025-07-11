@@ -5,15 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuickCar Service</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome for icons (stars, etc.) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        // Your Firebase project configuration
+        // IMPORTANT: Replace with your actual Firebase project configuration values
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
+            databaseURL: "YOUR_DATABASE_URL" // Important for Realtime Database
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        // Expose auth and database instances globally for script.js
+        window.firebaseAuth = getAuth(app);
+        window.firebaseDB = getDatabase(app);
+        console.log("Firebase initialized and instances exposed globally.");
+    </script>
 </head>
 <body>
 
-    <!-- Language Selection Screen -->
+    <div id="customMessageBox" class="custom-message-box"></div>
+
     <div id="language-selection-screen" class="screen">
         <div class="lang-container">
-            <h2>Select Your Language</h2>
+            <h2 data-translate="choose_language">Choose Your Language</h2>
             <button class="lang-btn" data-lang="en">English</button>
             <button class="lang-btn" data-lang="hi">हिंदी (Hindi)</button>
             <button class="lang-btn" data-lang="mr">मराठी (Marathi)</button>
@@ -22,164 +47,127 @@
         </div>
     </div>
 
-    <!-- Customer Authentication Screen -->
-    <div id="customer-auth-screen" class="screen auth-screen">
+    <div id="customer-auth-screen" class="screen auth-screen" style="display: none;">
         <div class="auth-container">
             <div class="auth-toggle">
-                <button class="toggle-btn active" onclick="showCustomerAuth('login')">Login</button>
-                <button class="toggle-btn" onclick="showCustomerAuth('register')">Register</button>
+                <button class="toggle-btn active" onclick="showCustomerAuth('login')" data-translate="login">Login</button>
+                <button class="toggle-btn" onclick="showCustomerAuth('register')" data-translate="register">Register</button>
             </div>
-
-            <!-- Customer Login Form -->
-            <form id="customerLoginForm" class="auth-form">
-                <h2>Customer Login</h2>
-                <div class="input-group">
-                    <label for="customerLoginEmail">Email:</label>
-                    <input type="email" id="customerLoginEmail" required value="customer@example.com">
-                </div>
-                <div class="input-group">
-                    <label for="customerLoginPassword">Password:</label>
-                    <input type="password" id="customerLoginPassword" required value="password">
-                </div>
-                <button type="submit" class="btn">Login</button>
-                <p class="auth-link" onclick="forgotPassword('customer')">Forgot Password?</p>
-                <div class="divider">OR</div>
-                <button type="button" class="btn btn-google" id="googleSignInBtn">
-                    <i class="fab fa-google"></i> Sign in with Google
-                </button>
-                <p class="auth-switch">Are you a Service Center? <span onclick="showScreen('service-center-auth-screen')">Login Here</span></p>
-            </form>
-
-            <!-- Customer Registration Form (initially hidden) -->
-            <form id="customerRegisterForm" class="auth-form" style="display:none;">
-                <h2>Customer Register</h2>
-                <div class="input-group">
-                    <label for="customerRegisterName">Name:</label>
-                    <input type="text" id="customerRegisterName" required>
-                </div>
-                <div class="input-group">
-                    <label for="customerRegisterEmail">Email:</label>
-                    <input type="email" id="customerRegisterEmail" required>
-                </div>
-                <div class="input-group">
-                    <label for="customerRegisterPassword">Password:</label>
-                    <input type="password" id="customerRegisterPassword" required>
-                </div>
-                <button type="submit" class="btn">Register</button>
-                <p class="auth-switch">Already have an account? <span onclick="showCustomerAuth('login')">Login</span></p>
-            </form>
+            <div id="customerLoginForm" class="auth-form" style="display: block;">
+                <h2 data-translate="customer_login">Customer Login</h2>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label for="customerLoginEmail" data-translate="email">Email</label>
+                        <input type="email" id="customerLoginEmail" placeholder="your.email@example.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="customerLoginPassword" data-translate="password">Password</label>
+                        <input type="password" id="customerLoginPassword" placeholder="********" required>
+                    </div>
+                    <button type="submit" class="btn" data-translate="login">Login</button>
+                    <p class="auth-link"><span onclick="forgotPassword('customer')" data-translate="forgot_password">Forgot Password?</span></p>
+                    <div class="divider" data-translate="or">OR</div>
+                    <button type="button" id="googleSignInBtn" class="btn btn-google">
+                        <i class="fab fa-google"></i> <span data-translate="sign_in_with_google">Sign in with Google</span>
+                    </button>
+                </form>
+            </div>
+            <div id="customerRegisterForm" class="auth-form" style="display: none;">
+                <h2 data-translate="customer_register">Customer Register</h2>
+                <form id="registerForm">
+                    <div class="input-group">
+                        <label for="customerRegisterName" data-translate="full_name">Full Name</label>
+                        <input type="text" id="customerRegisterName" placeholder="Your Name" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="customerRegisterEmail" data-translate="email">Email</label>
+                        <input type="email" id="customerRegisterEmail" placeholder="your.email@example.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="customerRegisterPassword" data-translate="password">Password</label>
+                        <input type="password" id="customerRegisterPassword" placeholder="********" required>
+                    </div>
+                    <button type="submit" class="btn" data-translate="register">Register</button>
+                </form>
+            </div>
+            <p class="auth-switch">
+                <span data-translate="are_you_a_service_center">Are you a Service Center?</span>
+                <span onclick="showScreen('service-center-auth-screen')" data-translate="service_center_login">Service Center Login</span>
+            </p>
         </div>
     </div>
 
-    <!-- Service Center Authentication Screen -->
-    <div id="service-center-auth-screen" class="screen auth-screen" style="display:none;">
+    <div id="service-center-auth-screen" class="screen auth-screen" style="display: none;">
         <div class="auth-container">
             <h2>Service Center Login</h2>
-            <form id="serviceCenterLoginForm" class="auth-form">
+            <form id="serviceCenterLoginForm">
                 <div class="input-group">
-                    <label for="centerLoginEmail">Email:</label>
-                    <input type="email" id="centerLoginEmail" required value="center@example.com">
+                    <label for="centerLoginEmail">Email</label>
+                    <input type="email" id="centerLoginEmail" placeholder="center.email@example.com" required>
                 </div>
                 <div class="input-group">
-                    <label for="centerLoginPassword">Password:</label>
-                    <input type="password" id="centerLoginPassword" required value="password">
+                    <label for="centerLoginPassword">Password</label>
+                    <input type="password" id="centerLoginPassword" placeholder="********" required>
                 </div>
-                <button type="submit" class="btn">Login</button>
-                <p class="auth-link" onclick="forgotPassword('serviceCenter')">Forgot Password?</p>
-                <p class="auth-switch">Are you a Customer? <span onclick="showScreen('customer-auth-screen')">Login Here</span></p>
+                <button type="submit" class="btn">Login as Service Center</button>
+                <p class="auth-link"><span onclick="forgotPassword('serviceCenter')">Forgot Password?</span></p>
             </form>
+            <p class="auth-switch">
+                <span data-translate="are_you_a_customer">Are you a Customer?</span>
+                <span onclick="showScreen('customer-auth-screen')" data-translate="customer_login_here">Login here</span>
+            </p>
         </div>
     </div>
 
-    <!-- Main App Container -->
-    <!-- Main App Container -->
-<div class="app-container" style="display:none;">
-    <nav class="navbar">
-        <div class="logo">
-            <img src="https://via.placeholder.com/40x40?text=QC" alt="QuickCar Logo">
-            QuickCar
-        </div>
-        <ul class="nav-links">
-            <li class="customer-nav-item"><a href="#home-section" class="nav-link active" data-translate="nav_home">Home</a></li>
-            <li class="customer-nav-item"><a href="#book-service-section" class="nav-link" data-translate="nav_book_service">Book Service</a></li>
-            <li class="customer-nav-item"><a href="#payment-section" class="nav-link" data-translate="nav_payments">Payments</a></li>
-            <li class="customer-nav-item"><a href="#feedback-section" class="nav-link" data-translate="nav_feedback">Feedback</a></li>
-            <li class="customer-nav-item"><a href="#contact-section" class="nav-link" data-translate="nav_contact">Contact Us</a></li>
-            <li class="customer-nav-item"><a href="#profile-section" class="nav-link" data-translate="nav_profile">Profile</a></li>
-            <li class="customer-nav-item"><a href="#chat-section" class="nav-link" data-translate="nav_chat">Chat</a></li>
-        </ul>
-        <button id="logoutBtn" class="btn logout-button">Logout</button>
-    </nav>
-
-    <!-- Page Sections -->
-    <div id="home-section" class="content-section active">
-        <h1>Welcome to QuickCar</h1>
-        <p>This is the home section.</p>
-    </div>
-
-    <div id="book-service-section" class="content-section">
-        <h2>Book a Service</h2>
-        <!-- Booking form or UI goes here -->
-    </div>
-
-    <div id="payment-section" class="content-section">
-        <h2>Payment Section</h2>
-        <!-- Payment details go here -->
-    </div>
-
-    <div id="feedback-section" class="content-section">
-        <h2>Feedback Section</h2>
-        <!-- Feedback form goes here -->
-    </div>
-
-    <div id="contact-section" class="content-section">
-        <h2>Contact Us</h2>
-        <!-- Contact info or form goes here -->
-    </div>
-
-    <div id="profile-section" class="content-section">
-        <h2>Your Profile</h2>
-        <!-- Profile data goes here -->
-    </div>
-
-    <div id="chat-section" class="content-section">
-        <h2>Chat with Service Center</h2>
-        <!-- Chat UI goes here -->
-    </div>
-</div>
-
+    <div id="app-container" class="app-container" style="display: none;">
+        <nav class="navbar">
+            <a href="#" class="logo" onclick="showContentSection('home-section')">
+                <img src="https://via.placeholder.com/50/0056b3/ffffff?text=QC" alt="QuickCar Logo" width="50" height="50">
+                QuickCar
+            </a>
+            <ul class="nav-links">
+                <li class="nav-item customer-nav-item"><a href="#home-section" class="nav-link active" onclick="showContentSection('home-section')" data-translate="nav_home">Home</a></li>
+                <li class="nav-item customer-nav-item"><a href="#book-service-section" class="nav-link" onclick="showContentSection('book-service-section')" data-translate="nav_book_service">Book Service</a></li>
+                <li class="nav-item customer-nav-item"><a href="#payments-section" class="nav-link" onclick="showContentSection('payments-section')" data-translate="nav_payments">Payments</a></li>
+                <li class="nav-item customer-nav-item"><a href="#feedback-section" class="nav-link" onclick="showContentSection('feedback-section')" data-translate="nav_feedback">Feedback</a></li>
+                <li class="nav-item customer-nav-item"><a href="#contact-section" class="nav-link" onclick="showContentSection('contact-section')" data-translate="nav_contact">Contact Us</a></li>
+                <li class="nav-item customer-nav-item"><a href="#profile-section" class="nav-link" onclick="showContentSection('profile-section')" data-translate="nav_profile">Profile</a></li>
+                <li class="nav-item customer-nav-item"><a href="#chat-section" class="nav-link" onclick="showContentSection('chat-section')" data-translate="nav_chat">Chat</a></li>
+                <li class="nav-item service-center-nav-item" style="display:none;"><a href="#service-center-dashboard" class="nav-link" onclick="showContentSection('service-center-dashboard')">Dashboard</a></li>
+            </ul>
+            <button id="logoutBtn" class="logout-button" data-translate="logout">Logout</button>
+        </nav>
 
         <main class="content">
-            <!-- Home Section -->
             <section id="home-section" class="content-section active">
                 <div class="hero-section">
                     <h1 data-translate="hero_heading">Experience Hassle-Free Car Servicing!</h1>
                     <p data-translate="hero_subheading">From pickup to delivery, we make car maintenance easy and transparent. Quick, reliable, and just a tap away.</p>
-                    <button class="btn" onclick="showContentSection('book-service-section')" data-translate="book_now_cta">Book Your Service Now</button>
+                    <a href="#book-service-section" class="btn" onclick="showContentSection('book-service-section')" data-translate="book_now_cta">Book Your Service Now</a>
                 </div>
 
                 <div class="features-section">
-                    <h2>Our Key Features</h2>
+                    <h2>Why Choose QuickCar?</h2>
                     <div class="feature-grid">
-                        <div class="feature-item">
-                            <i class="fas fa-calendar-check"></i>
-                            <h3>Easy Booking</h3>
-                            <p>Schedule your service online in minutes.</p>
-                        </div>
                         <div class="feature-item">
                             <i class="fas fa-truck-pickup"></i>
                             <h3>Free Pickup & Drop</h3>
-                            <p>We pick up your car from your location and deliver it back.</p>
+                            <p>We pick up your car from your location and deliver it back after service.</p>
                         </div>
                         <div class="feature-item">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-wrench"></i>
+                            <h3>Expert Mechanics</h3>
+                            <p>Our certified technicians provide top-notch service for all car models.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>Genuine Parts</h3>
+                            <p>We use only authentic spare parts for all repairs and replacements.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-wallet"></i>
                             <h3>Transparent Pricing</h3>
-                            <p>No hidden costs, clear breakdown of all charges.</p>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-headset"></i>
-                            <h3>24/7 Support</h3>
-                            <p>Get assistance anytime, anywhere.</p>
+                            <p>No hidden costs, clear breakdown of all services and charges.</p>
                         </div>
                     </div>
                 </div>
@@ -187,105 +175,124 @@
                 <div class="testimonials-section">
                     <h2>What Our Customers Say</h2>
                     <ul id="testimonialList">
-                        <!-- Testimonials will be loaded here dynamically -->
-                        <li id="noTestimonialsMessage" class="empty-message">No testimonials yet. Be the first to leave feedback!</li>
+                        <li>
+                            <p class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                            </p>
+                            <p>"Excellent service! My car was picked up and delivered on time. Very professional team."</p>
+                            <p class="author">- Sarah Johnson</p>
+                        </li>
+                        <li>
+                            <p class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </p>
+                            <p>"Quick and reliable. The online booking system made everything so easy. Highly recommended!"</p>
+                            <p class="author">- Mike Chen</p>
+                        </li>
+                        <li>
+                            <p class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i>
+                            </p>
+                            <p>"Great experience overall. Good communication throughout the service process."</p>
+                            <p class="author">- Emily Davis</p>
+                        </li>
                     </ul>
                 </div>
             </section>
 
-            <!-- Book Service Section -->
-            <section id="book-service-section" class="content-section">
-                <h2>Book a Service</h2>
+            <section id="book-service-section" class="content-section" style="display: none;">
+                <h2>Book Your Service</h2>
                 <form id="serviceBookingForm" class="service-form">
                     <div class="input-group">
-                        <label for="customerName">Your Name:</label>
-                        <input type="text" id="customerName" required>
+                        <label for="customerName">Your Name</label>
+                        <input type="text" id="customerName" placeholder="Enter your full name" required>
                     </div>
                     <div class="input-group">
-                        <label for="customerContact">Your Contact Number:</label>
-                        <input type="tel" id="customerContact" pattern="[0-9]{10}" placeholder="e.g., 9876543210" required>
+                        <label for="customerContact">Contact Number</label>
+                        <input type="tel" id="customerContact" placeholder="Enter your phone number" pattern="[0-9]{10}" title="Please enter a 10-digit phone number" required>
                     </div>
                     <div class="input-group">
-                        <label for="customerAddress">Your Address:</label>
-                        <textarea id="customerAddress" rows="3" required></textarea>
+                        <label for="customerAddress">Pickup Address</label>
+                        <textarea id="customerAddress" rows="3" placeholder="Enter your complete address for car pickup" required></textarea>
                     </div>
                     <div class="input-group">
-                        <label for="carModel">Car Model:</label>
-                        <input type="text" id="carModel" placeholder="e.g., Maruti Suzuki Swift" required>
+                        <label for="carModel">Car Model</label>
+                        <input type="text" id="carModel" placeholder="e.g., Honda Civic, Toyota Camry" required>
                     </div>
                     <div class="input-group">
-                        <label for="serviceType">Service Type:</label>
+                        <label for="serviceType">Select Service Type</label>
                         <select id="serviceType" required>
-                            <option value="">-- Select Service --</option>
-                            <option value="Basic Service">Basic Service</option>
-                            <option value="Full Service">Full Service</option>
-                            <option value="Engine Repair">Engine Repair</option>
-                            <option value="Wheel Alignment">Wheel Alignment</option>
-                            <option value="Car Wash">Car Wash</option>
-                            <option value="Denting & Painting">Denting & Painting</option>
-                            <option value="Other">Other (Please specify)</option>
+                            <option value="">-- Choose Service --</option>
+                            <option value="General Service">General Service</option>
+                            <option value="Oil Change">Oil Change</option>
+                            <option value="Brake Repair">Brake Repair</option>
+                            <option value="Tire Rotation">Tire Rotation</option>
+                            <option value="AC Repair">AC Repair</option>
+                            <option value="Battery Check">Battery Check</option>
+                            <option value="Other">Other (Please specify below)</option>
                         </select>
                     </div>
                     <div id="otherServiceTypeGroup" class="input-group" style="display:none;">
-                        <label for="otherServiceType">Specify Other Service:</label>
-                        <input type="text" id="otherServiceType">
+                        <label for="otherServiceType">Specify Other Service</label>
+                        <input type="text" id="otherServiceType" placeholder="e.g., Engine Diagnostics, Dent Repair">
                     </div>
                     <div class="input-group">
-                        <label for="preferredDate">Preferred Date:</label>
+                        <label for="preferredDate">Preferred Date</label>
                         <input type="date" id="preferredDate" required>
                     </div>
                     <div class="input-group">
-                        <label for="preferredTime">Preferred Time:</label>
+                        <label for="preferredTime">Preferred Time</label>
                         <input type="time" id="preferredTime" required>
                     </div>
-                    <button type="submit" class="btn">Book Now</button>
+                    <button type="submit" class="btn">Request Service</button>
                 </form>
             </section>
 
-            <!-- Payments Section -->
-            <section id="payment-section" class="content-section">
-                <h2>Make a Payment</h2>
+            <section id="payments-section" class="content-section" style="display: none;">
+                <h2>Payment Section</h2>
                 <div class="payment-summary">
+                    <h3>Service Details for Payment</h3>
                     <p><strong>Service ID:</strong> <span id="paymentServiceId">N/A</span></p>
                     <p><strong>Customer Name:</strong> <span id="paymentCustomerName">N/A</span></p>
                     <p><strong>Service Type:</strong> <span id="paymentServiceType">N/A</span></p>
                     <p><strong>Amount Due:</strong> <span id="paymentAmountDue">₹0.00</span></p>
+                    <p class="info-text">Book a service first to see payment details here.</p>
                 </div>
                 <form id="paymentForm" class="payment-form">
+                    <h3>Complete Your Payment</h3>
                     <div class="input-group">
-                        <label for="paymentMethod">Payment Method:</label>
-                        <select id="paymentMethod" onchange="togglePaymentFields()" required>
+                        <label for="paymentMethod">Payment Method</label>
+                        <select id="paymentMethod" required>
                             <option value="">-- Select Method --</option>
                             <option value="cash">Cash on Delivery</option>
-                            <option value="online">Online Payment (UPI/Mobile)</option>
+                            <option value="online">Online Payment (UPI/Netbanking)</option>
                         </select>
                     </div>
                     <div id="onlinePaymentFields" style="display:none;">
                         <div class="input-group">
-                            <label for="customerMobileNumber">Mobile Number (Optional):</label>
-                            <input type="tel" id="customerMobileNumber" pattern="[0-9]{10}" placeholder="Enter 10-digit number">
+                            <label for="customerMobileNumber">Mobile Number (for UPI/Netbanking)</label>
+                            <input type="tel" id="customerMobileNumber" placeholder="e.g., 9876543210" pattern="[0-9]{10}" title="Please enter a 10-digit mobile number">
                         </div>
                         <div class="input-group">
-                            <label for="customerUpiId">UPI ID (Optional):</label>
-                            <input type="text" id="customerUpiId" placeholder="e.g., yourname@bankupi">
+                            <label for="customerUpiId">UPI ID (Optional)</label>
+                            <input type="text" id="customerUpiId" placeholder="e.g., yourname@bankname">
                         </div>
-                        <p class="info-text">Please enter either Mobile Number or UPI ID.</p>
+                        <p class="info-text">For online payments, please ensure your mobile number is linked to your UPI or banking app.</p>
                     </div>
-                    <button type="submit" class="btn">Pay Now</button>
+                    <button type="submit" class="btn">Make Payment</button>
                 </form>
-                <div id="paymentStatus" class="message-box"></div>
             </section>
 
-            <!-- Feedback Section -->
-            <section id="feedback-section" class="content-section">
-                <h2>Leave Your Feedback</h2>
+            <section id="feedback-section" class="content-section" style="display: none;">
+                <h2>Feedback Section</h2>
                 <form id="feedbackForm" class="feedback-form">
+                    <h3>Share Your Feedback</h3>
                     <div class="input-group">
-                        <label for="serviceIdFeedback">Service ID:</label>
-                        <input type="text" id="serviceIdFeedback" readonly required>
+                        <label for="serviceIdFeedback">Service ID</label>
+                        <input type="text" id="serviceIdFeedback" placeholder="e.g., #SVC12345" readonly>
                     </div>
                     <div class="input-group">
-                        <label>Your Rating:</label>
+                        <label>Rate your experience</label>
                         <div id="starRating" class="star-rating">
                             <i class="far fa-star" data-rating="1"></i>
                             <i class="far fa-star" data-rating="2"></i>
@@ -295,165 +302,152 @@
                         </div>
                     </div>
                     <div class="input-group">
-                        <label for="feedbackMessage">Your Message:</label>
-                        <textarea id="feedbackMessage" rows="5" placeholder="Share your experience..." required></textarea>
+                        <label for="feedbackMessage">Your Comments</label>
+                        <textarea id="feedbackMessage" rows="4" placeholder="Tell us about your experience..." required></textarea>
                     </div>
                     <button type="submit" class="btn">Submit Feedback</button>
                 </form>
+
+                <h3>What Our Customers Say:</h3>
+                <ul id="customerFeedbackList">
+                    <li class="empty-message" id="noFeedbackMessage">No feedback submitted yet.</li>
+                </ul>
             </section>
 
-            <!-- Contact Us Section -->
-            <section id="contact-section" class="content-section">
+            <section id="contact-section" class="content-section" style="display: none;">
                 <h2>Contact Us</h2>
                 <div class="contact-info">
-                    <p><i class="fas fa-map-marker-alt"></i> <strong>Address:</strong> 456 Speed Avenue, Auto City, India</p>
-                    <p><i class="fas fa-phone"></i> <strong>Phone:</strong> +91 98765 43210</p>
+                    <h3>Get In Touch</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> <strong>Address:</strong> QuickCar Service Hub, 456 Speed Avenue, Auto City, State 54321</p>
+                    <p><i class="fas fa-phone-alt"></i> <strong>Phone:</strong> +91 98765 43210</p>
                     <p><i class="fas fa-envelope"></i> <strong>Email:</strong> support@quickcar.com</p>
-                    <p><i class="fas fa-clock"></i> <strong>Hours:</strong> Mon - Sat: 9 AM - 7 PM, Sunday: Closed</p>
+                    <p><i class="fas fa-clock"></i> <strong>Business Hours:</strong></p>
+                    <ul>
+                        <li>Monday - Saturday: 9:00 AM - 6:00 PM</li>
+                        <li>Sunday: 10:00 AM - 4:00 PM</li>
+                    </ul>
+                    <div class="input-group">
+                        <a href="https://www.google.com/maps/search/QuickCar+Service+Hub+Mumbai+Maharashtra" target="_blank" class="btn btn-secondary" style="width: 100%; text-align: center;">
+                            <i class="fas fa-map-marked-alt"></i> View on Map
+                        </a>
+                        <small>Location: Mumbai, Maharashtra</small>
+                    </div>
                 </div>
+
                 <form id="contactForm" class="contact-form">
+                    <h3>Send us a Message</h3>
                     <div class="input-group">
-                        <label for="contactName">Your Name:</label>
-                        <input type="text" id="contactName" required>
+                        <label for="contactName">Your Name</label>
+                        <input type="text" id="contactName" placeholder="Enter your full name" required>
                     </div>
                     <div class="input-group">
-                        <label for="contactEmail">Your Email:</label>
-                        <input type="email" id="contactEmail" required>
+                        <label for="contactEmail">Your Email</label>
+                        <input type="email" id="contactEmail" placeholder="Enter your email address" required>
                     </div>
                     <div class="input-group">
-                        <label for="contactMessage">Your Message:</label>
-                        <textarea id="contactMessage" rows="5" required></textarea>
+                        <label for="contactSubject">Subject</label>
+                        <input type="text" id="contactSubject" placeholder="What is this regarding?">
+                    </div>
+                    <div class="input-group">
+                        <label for="contactMessage">Message</label>
+                        <textarea id="contactMessage" rows="5" placeholder="Tell us how we can help you..." required></textarea>
                     </div>
                     <button type="submit" class="btn">Send Message</button>
                 </form>
             </section>
 
-            <!-- Profile Section -->
-            <section id="profile-section" class="content-section">
-                <h2>My Profile</h2>
+            <section id="profile-section" class="content-section" style="display: none;">
+                <h2>Your Profile</h2>
                 <form id="profileForm" class="profile-form">
+                    <h3>Personal Information</h3>
                     <div class="input-group">
-                        <label for="profileName">Name:</label>
-                        <input type="text" id="profileName" required>
+                        <label for="profileName">Name</label>
+                        <input type="text" id="profileName" placeholder="Your Name" required>
                     </div>
                     <div class="input-group">
-                        <label for="profileEmail">Email:</label>
-                        <input type="email" id="profileEmail" required>
+                        <label for="profileEmail">Email</label>
+                        <input type="email" id="profileEmail" placeholder="your.email@example.com" required readonly>
                     </div>
                     <div class="input-group">
-                        <label for="profileMobile">Mobile:</label>
-                        <input type="tel" id="profileMobile" pattern="[0-9]{10}" required>
+                        <label for="profileMobile">Mobile Number</label>
+                        <input type="tel" id="profileMobile" placeholder="e.g., 9876543210" pattern="[0-9]{10}" title="Please enter a 10-digit phone number">
                     </div>
                     <div class="input-group">
-                        <label for="profileAddress">Address:</label>
-                        <textarea id="profileAddress" rows="3" required></textarea>
+                        <label for="profileAddress">Address</label>
+                        <textarea id="profileAddress" rows="3" placeholder="Your current address"></textarea>
                     </div>
-                    <h3>Car Details</h3>
+
+                    <h3>Vehicle Information</h3>
                     <div class="input-group">
-                        <label for="profileCarMake">Car Make:</label>
-                        <input type="text" id="profileCarMake" placeholder="e.g., Toyota">
-                    </div>
-                    <div class="input-group">
-                        <label for="profileCarModel">Car Model:</label>
-                        <input type="text" id="profileCarModel" placeholder="e.g., Camry">
+                        <label for="profileCarMake">Car Make</label>
+                        <input type="text" id="profileCarMake" placeholder="e.g., Honda, Toyota, Maruti Suzuki">
                     </div>
                     <div class="input-group">
-                        <label for="profileCarYear">Car Year:</label>
-                        <input type="number" id="profileCarYear" placeholder="e.g., 2020" min="1900" max="2099">
+                        <label for="profileCarModel">Car Model</label>
+                        <input type="text" id="profileCarModel" placeholder="e.g., Civic, Camry, Swift">
                     </div>
                     <div class="input-group">
-                        <label for="profileLicensePlate">License Plate:</label>
+                        <label for="profileCarYear">Car Year</label>
+                        <input type="number" id="profileCarYear" placeholder="e.g., 2018" min="1900" max="2099">
+                    </div>
+                    <div class="input-group">
+                        <label for="profileLicensePlate">License Plate</label>
                         <input type="text" id="profileLicensePlate" placeholder="e.g., MH12AB1234">
                     </div>
-                    <button type="submit" class="btn">Update Profile</button>
+                    <button type="submit" class="btn">Save Profile</button>
                 </form>
             </section>
 
-            <!-- Chat Section -->
-            <section id="chat-section" class="content-section">
+            <section id="chat-section" class="content-section" style="display: none;">
                 <h2>Chat with Service Center</h2>
                 <div class="chat-container">
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="message received">
-                            <p>Service Center: Hello! How can we help you today?</p>
-                        </div>
-                        <!-- More messages will be appended here -->
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="message received"><p><strong>Service Center:</strong> Hi there! How can we help you today?</p><span class="timestamp">10:00 AM</span></div>
+                        <div class="message sent"><p><strong>You:</strong> I need to book a general service for my car.</p><span class="timestamp">10:01 AM</span></div>
+                        <div class="message received"><p><strong>Service Center:</strong> Sure, please provide your service ID or car details.</p><span class="timestamp">10:02 AM</span></div>
                     </div>
                     <div class="chat-input-group">
                         <input type="text" id="chatInput" placeholder="Type your message...">
-                        <button class="btn" id="chatSendBtn">Send</button>
+                        <button id="chatSendBtn" class="btn">Send</button>
                     </div>
                 </div>
             </section>
 
-            <!-- Service Center Dashboard (hidden for customers) -->
-            <section id="service-center-dashboard" class="content-section">
+            <section id="service-center-dashboard" class="content-section" style="display: none;">
                 <h2>Service Center Dashboard</h2>
                 <div class="dashboard-grid">
                     <div class="dashboard-card">
-                        <h3>Pending Service Requests</h3>
+                        <h3>New Service Requests</h3>
                         <ul id="serviceRequestsList">
-                            <!-- Service requests will be dynamically added here -->
-                            <li id="noRequestsMessage" class="empty-message">No pending service requests.</li>
-                        </ul>
+                            <li class="empty-message" id="noRequestsMessage">No new service requests.</li>
+                            </ul>
                     </div>
+
                     <div class="dashboard-card">
-                        <h3>Customer Feedback</h3>
-                        <ul id="customerFeedbackList">
-                            <!-- Customer feedback will be dynamically added here -->
-                            <li id="noFeedbackMessage" class="empty-message">No customer feedback yet.</li>
+                        <h3>Customer Feedbacks</h3>
+                        <ul id="customerFeedbackListDashboard">
+                            <li class="empty-message" id="noFeedbackMessageDashboard">No customer feedback yet.</li>
                         </ul>
                     </div>
+
                     <div class="dashboard-card">
                         <h3>Payment History</h3>
                         <ul id="paymentHistoryList">
-                            <!-- Payment history will be dynamically added here -->
-                            <li id="noPaymentHistoryMessage" class="empty-message">No payment history yet.</li>
+                            <li class="empty-message" id="noPaymentHistoryMessage">No payment history.</li>
                         </ul>
                     </div>
+
                     <div class="dashboard-card points-card">
                         <h3>Loyalty Points Balance</h3>
-                        <p id="centerPointsBalance">0 points</p>
-                        <button class="btn btn-secondary" onclick="convertCenterPoints()">Convert Points to Cash</button>
+                        <p id="centerPointsBalance">1250</p>
+                        <button id="convertCenterPoints" class="btn">Convert Points to Cash</button>
                     </div>
                 </div>
             </section>
+
         </main>
     </div>
 
-    <!-- Custom Message Box for notifications -->
-    <div id="customMessageBox" class="custom-message-box"></div>
-
-    <!-- Firebase v9+ Modular SDKs -->
-    <script type="module">
-      // Import the functions from Firebase Modular SDK
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-      import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-      import { getDatabase } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
-      // Your Firebase Configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyDgGaOi-lNe9vNg72fNag1C6hioB2qqnMU", // <-- REPLACE THIS
-        authDomain: "service-prepareing.firebaseapp.com", // <-- REPLACE THIS
-        projectId: "service-prepareing", // <-- REPLACE THIS
-        databaseURL: "https://service-prepareing-default-rtdb.firebaseio.com", // <-- REPLACE THIS
-        storageBucket: "service-prepareing.firebasestorage.app", // <-- REPLACE THIS
-        messagingSenderId: "295345065007", // <-- REPLACE THIS
-        appId: "1:295345065007:web:0eb9463c2f0b73ff4b4ada", // <-- REPLACE THIS
-        measurementId: "G-W68Y5N8TLD" // <-- REPLACE THIS (Optional)
-      };
-
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      // Expose auth and database instances globally so script.js can access them
-      window.firebaseAuth = getAuth(app);
-      window.firebaseDB = getDatabase(app);
-
-      console.log("Firebase v9+ Modular SDK initialized in index.html.");
-    </script>
-
-    <!-- Your custom JavaScript file -->
-    <!-- Ensure this is also a module to use import/export syntax -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
