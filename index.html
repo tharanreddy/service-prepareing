@@ -6,6 +6,40 @@
     <title>Car Service App</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        // Import Analytics if you want to use it
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyDgGaOi-lNe9vNg72fNag1C6hioB2qqnMU", // Replace with your actual API Key
+            authDomain: "service-prepareing.firebaseapp.com",
+            projectId: "service-prepareing",
+            storageBucket: "service-prepareing.firebasestorage.app",
+            messagingSenderId: "295345065007",
+            appId: "1:295345065007:web:0eb9463c2f0b73ff4b4ada",
+            measurementId: "G-W68Y5N8TLD",
+            databaseURL: "https://service-prepareing-default-rtdb.firebaseio.com/" // Ensure this is correct for Realtime DB
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const analytics = getAnalytics(app);
+
+        // Expose Firebase instances globally for script.js
+        window.firebaseAuth = auth;
+        window.firebaseDB = db;
+        window.firebaseAnalytics = analytics;
+    </script>
+    <script type="module" src="script.js"></script>
 </head>
 <body>
     <div id="customMessageBox" class="custom-message-box"></div>
@@ -87,24 +121,24 @@
                 <form id="serviceBookingForm" class="app-form">
                     <div class="form-group">
                         <label for="customerName">Your Name</label>
-                        <input type="text" id="customerName" required>
+                        <input type="text" id="customerName" placeholder="Enter your full name" required>
                     </div>
                     <div class="form-group">
                         <label for="customerContact">Contact Number</label>
-                        <input type="tel" id="customerContact" placeholder="e.g., +91-9876543210" required>
+                        <input type="tel" id="customerContact" placeholder="Enter your phone number" required>
                     </div>
                     <div class="form-group">
                         <label for="customerAddress">Pickup Address</label>
-                        <textarea id="customerAddress" rows="3" required></textarea>
+                        <textarea id="customerAddress" rows="3" placeholder="Enter your complete address for car pickup" required></textarea>
                     </div>
                     <div class="form-group">
                         <label for="carModel">Car Make & Model</label>
-                        <input type="text" id="carModel" placeholder="e.g., Maruti Swift, Honda City" required>
+                        <input type="text" id="carModel" placeholder="e.g., Honda Civic, Toyota Camry" required>
                     </div>
                     <div class="form-group">
                         <label for="serviceType">Select Service Type</label>
                         <select id="serviceType" required>
-                            <option value="">-- Select --</option>
+                            <option value="">-- Choose Service --</option>
                             <option value="General Service">General Service</option>
                             <option value="Oil Change">Oil Change</option>
                             <option value="Brake Inspection">Brake Inspection</option>
@@ -128,7 +162,7 @@
                         <label for="preferredTime">Preferred Time</label>
                         <input type="time" id="preferredTime" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                    <button type="submit" class="btn btn-primary">Request Service</button>
                 </form>
             </section>
 
@@ -171,7 +205,7 @@
             </section>
 
             <section id="feedback-section" class="content-section">
-                <h2>Submit Your Feedback</h2>
+                <h2>Share Your Feedback</h2>
                 <form id="feedbackForm" class="app-form">
                     <div class="form-group">
                         <label for="serviceIdFeedback">Service Request ID (Optional)</label>
@@ -194,7 +228,7 @@
                     <button type="submit" class="btn btn-primary">Submit Feedback</button>
                 </form>
 
-                <h3>Your Past Feedback</h3>
+                <h3>What Our Customers Say:</h3>
                 <ul id="customerFeedbackList" class="data-list">
                     <li class="empty-message">No feedback submitted yet.</li>
                 </ul>
@@ -273,15 +307,7 @@
                 <h2>Customer Support Chat</h2>
                 <div class="chat-box">
                     <div id="chatMessages" class="chat-messages">
-                        <div class="message received">
-                            <p><strong>Service Center:</strong> Welcome to chat! How can we assist you?</p>
-                            <span class="timestamp">10:00 AM</span>
                         </div>
-                        <div class="message sent">
-                            <p><strong>You:</strong> Hi, I need to book a service.</p>
-                            <span class="timestamp">10:01 AM</span>
-                        </div>
-                    </div>
                     <div class="chat-input-area">
                         <input type="text" id="chatInput" placeholder="Type your message...">
                         <button id="chatSendBtn" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Send</button>
@@ -315,33 +341,5 @@
             </section>
         </main>
     </div>
-
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDgGaOi-lNe9vNg72fNag1C6hioB2qqnMU",
-  authDomain: "service-prepareing.firebaseapp.com",
-  projectId: "service-prepareing",
-  storageBucket: "service-prepareing.firebasestorage.app",
-  messagingSenderId: "295345065007",
-  appId: "1:295345065007:web:0eb9463c2f0b73ff4b4ada",
-  measurementId: "G-W68Y5N8TLD"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-        // Expose Firebase instances globally
-        window.firebaseAuth = auth;
-        window.firebaseDB = db;
-    </script>
-    <script type="module" src="script.js"></script>
 </body>
 </html>
