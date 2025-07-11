@@ -18,10 +18,14 @@ import {
     remove,
     update
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+// No explicit import for getAnalytics needed here, as it's exposed globally
+// If you wanted to use getAnalytics directly, you'd import it here too:
+// import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
 
 // Ensure Firebase instances are exposed globally from index.html
 const auth = window.firebaseAuth;
 const db = window.firebaseDB;
+// const analytics = window.firebaseAnalytics; // Uncomment if you need to use analytics here
 
 // Global state variables
 let currentActiveSectionId = 'customer-auth-screen'; // Initial active screen is now auth
