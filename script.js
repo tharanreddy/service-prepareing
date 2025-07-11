@@ -1,8 +1,3 @@
-I can provide the full, updated JavaScript code (`script.js`) that was previously discussed and provided. This code includes the Firebase integration for authentication, service booking, profile management, chat, payments, and feedback, along with the logic for language selection and UI management.
-
-Here is the complete `script.js` file:
-
-```javascript
 // Firebase Imports
 import {
     getAuth,
@@ -29,185 +24,8 @@ const auth = window.firebaseAuth;
 const db = window.firebaseDB;
 
 // Global state variables
-let currentActiveSectionId = 'language-selection-screen'; // Initial active screen
+let currentActiveSectionId = 'customer-auth-screen'; // Initial active screen is now auth
 let currentUserRole = null; // 'customer', 'serviceCenter', or null
-let currentLanguage = 'en'; // Default language
-
-// Language Translations (Add more languages and phrases as needed)
-const translations = {
-    en: {
-        choose_language: "Choose Your Language",
-        login: "Login",
-        register: "Register",
-        customer_login: "Customer Login",
-        customer_register: "Customer Register",
-        email: "Email",
-        password: "Password",
-        full_name: "Full Name",
-        forgot_password: "Forgot Password?",
-        or: "OR",
-        sign_in_with_google: "Sign in with Google",
-        are_you_a_service_center: "Are you a Service Center?",
-        service_center_login: "Service Center Login",
-        are_you_a_customer: "Are you a Customer?",
-        customer_login_here: "Login here",
-        logout: "Logout",
-        nav_home: "Home",
-        nav_book_service: "Book Service",
-        nav_payments: "Payments",
-        nav_feedback: "Feedback",
-        nav_contact: "Contact Us",
-        nav_profile: "Profile",
-        nav_chat: "Chat",
-        hero_heading: "Experience Hassle-Free Car Servicing!",
-        hero_subheading: "From pickup to delivery, we make car maintenance easy and transparent. Quick, reliable, and just a tap away.",
-        book_now_cta: "Book Your Service Now",
-        feedback_thank_you: "Thank you for your feedback!",
-        profile_updated: "Profile updated successfully!",
-        service_request_success: "Service request submitted successfully!",
-        payment_success: "Payment processed successfully!",
-        contact_message_sent: "Your message has been sent successfully!",
-        no_feedback_yet: "No feedback submitted yet.",
-        // Add more phrases as your UI expands
-    },
-    hi: {
-        choose_language: "अपनी भाषा चुनें",
-        login: "लॉग इन करें",
-        register: "पंजीकरण करें",
-        customer_login: "ग्राहक लॉगिन",
-        customer_register: "ग्राहक पंजीकरण",
-        email: "ईमेल",
-        password: "पासवर्ड",
-        full_name: "पूरा नाम",
-        forgot_password: "पासवर्ड भूल गए?",
-        or: "या",
-        sign_in_with_google: "गूगल से साइन इन करें",
-        are_you_a_service_center: "क्या आप एक सेवा केंद्र हैं?",
-        service_center_login: "सेवा केंद्र लॉगिन",
-        are_you_a_customer: "क्या आप ग्राहक हैं?",
-        customer_login_here: "यहां लॉग इन करें",
-        logout: "लॉग आउट",
-        nav_home: "होम",
-        nav_book_service: "सेवा बुक करें",
-        nav_payments: "भुगतान",
-        nav_feedback: "प्रतिक्रिया",
-        nav_contact: "हमसे संपर्क करें",
-        nav_profile: "प्रोफ़ाइल",
-        nav_chat: "चैट",
-        hero_heading: "परेशानी मुक्त कार सर्विसिंग का अनुभव करें!",
-        hero_subheading: "पिकअप से लेकर डिलीवरी तक, हम कार रखरखाव को आसान और पारदर्शी बनाते हैं। त्वरित, विश्वसनीय, और बस एक टैप दूर।",
-        book_now_cta: "अपनी सेवा अभी बुक करें",
-        feedback_thank_you: "आपकी प्रतिक्रिया के लिए धन्यवाद!",
-        profile_updated: "प्रोफ़ाइल सफलतापूर्वक अपडेट की गई!",
-        service_request_success: "सेवा अनुरोध सफलतापूर्वक सबमिट किया गया!",
-        payment_success: "भुगतान सफलतापूर्वक संसाधित हुआ!",
-        contact_message_sent: "आपका संदेश सफलतापूर्वक भेजा गया है!",
-        no_feedback_yet: "अभी तक कोई प्रतिक्रिया सबमिट नहीं की गई है।",
-    },
-    // Add other languages (mr, te, kn) here based on your needs
-    mr: {
-        choose_language: "आपली भाषा निवडा",
-        login: "लॉगिन करा",
-        register: "नोंदणी करा",
-        customer_login: "ग्राहक लॉगिन",
-        customer_register: "ग्राहक नोंदणी",
-        email: "ईमेल",
-        password: "पासवर्ड",
-        full_name: "पूर्ण नाव",
-        forgot_password: "पासवर्ड विसरलात?",
-        or: "किंवा",
-        sign_in_with_google: "गुगलने साइन इन करा",
-        are_you_a_service_center: "तुम्ही सेवा केंद्र आहात का?",
-        service_center_login: "सेवा केंद्र लॉगिन",
-        are_you_a_customer: "तुम्ही ग्राहक आहात का?",
-        customer_login_here: "येथे लॉगिन करा",
-        logout: "लॉगआउट",
-        nav_home: "होम",
-        nav_book_service: "सेवा बुक करा",
-        nav_payments: "देयके",
-        nav_feedback: "अभिप्राय",
-        nav_contact: "संपर्क साधा",
-        nav_profile: "प्रोफाइल",
-        nav_chat: "चॅट",
-        hero_heading: "तणावमुक्त कार सेवा अनुभवा!",
-        hero_subheading: "पिकअपपासून डिलिव्हरीपर्यंत, आम्ही कारची देखभाल सोपी आणि पारदर्शक करतो. जलद, विश्वासार्ह आणि फक्त एका टॅपवर.",
-        book_now_cta: "तुमची सेवा आता बुक करा",
-        feedback_thank_you: "आपल्या प्रतिसादाबद्दल धन्यवाद!",
-        profile_updated: "प्रोफाइल यशस्वीरित्या अद्यतनित केले!",
-        service_request_success: "सेवा विनंती यशस्वीरित्या सबमिट केली!",
-        payment_success: "भरणा यशस्वीरित्या प्रक्रिया केली!",
-        contact_message_sent: "आपला संदेश यशस्वीरित्या पाठवला गेला आहे!",
-        no_feedback_yet: "अद्याप कोणताही अभिप्राय सबमिट केलेला नाही.",
-    },
-    te: {
-        choose_language: "మీ భాషను ఎంచుకోండి",
-        login: "లాగిన్ చేయండి",
-        register: "నమోదు చేయండి",
-        customer_login: "కస్టమర్ లాగిన్",
-        customer_register: "కస్టమర్ నమోదు",
-        email: "ఇమెయిల్",
-        password: "పాస్‌వర్డ్",
-        full_name: "పూర్తి పేరు",
-        forgot_password: "పాస్‌వర్డ్ మర్చిపోయారా?",
-        or: "లేదా",
-        sign_in_with_google: "గూగుల్‌తో సైన్ ఇన్ చేయండి",
-        are_you_a_service_center: "మీరు సర్వీస్ సెంటర్వా?",
-        service_center_login: "సర్వీస్ సెంటర్ లాగిన్",
-        are_you_a_customer: "మీరు కస్టమర్వా?",
-        customer_login_here: "ఇక్కడ లాగిన్ చేయండి",
-        logout: "లాగ్ అవుట్",
-        nav_home: "హోమ్",
-        nav_book_service: "సేవను బుక్ చేయండి",
-        nav_payments: "చెల్లింపులు",
-        nav_feedback: "అభిప్రాయం",
-        nav_contact: "మమ్మల్ని సంప్రదించండి",
-        nav_profile: "ప్రొఫైల్",
-        nav_chat: "చాట్",
-        hero_heading: "ఎటువంటి ఇబ్బందులు లేని కార్ సర్వీసింగ్‌ను అనుభవించండి!",
-        hero_subheading: "పికప్ నుండి డెలివరీ వరకు, మేము కారు నిర్వహణను సులభం మరియు పారదర్శకంగా చేస్తాము. త్వరిత, నమ్మదగిన, మరియు కేవలం ఒక ట్యాప్ దూరంలో.",
-        book_now_cta: "మీ సేవను ఇప్పుడే బుక్ చేయండి",
-        feedback_thank_you: "మీ అభిప్రాయానికి ధన్యవాదాలు!",
-        profile_updated: "ప్రొఫైల్ విజయవంతంగా నవీకరించబడింది!",
-        service_request_success: "సేవా అభ్యర్థన విజయవంతంగా సమర్పించబడింది!",
-        payment_success: "చెల్లింపు విజయవంతంగా ప్రాసెస్ చేయబడింది!",
-        contact_message_sent: "మీ సందేశం విజయవంతంగా పంపబడింది!",
-        no_feedback_yet: "ఇప్పటివరకు అభిప్రాయం సమర్పించబడలేదు.",
-    },
-    kn: {
-        choose_language: "ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆರಿಸಿ",
-        login: "ಲಾಗ್ ಇನ್ ಮಾಡಿ",
-        register: "ನೋಂದಾಯಿಸಿ",
-        customer_login: "ಗ್ರಾಹಕ ಲಾಗಿನ್",
-        customer_register: "ಗ್ರಾಹಕ ನೋಂದಣಿ",
-        email: "ಇಮೇಲ್",
-        password: "ಪಾಸ್ವರ್ಡ್",
-        full_name: "ಪೂರ್ಣ ಹೆಸರು",
-        forgot_password: "ಪಾಸ್ವರ್ಡ್ ಮರೆತಿದ್ದೀರಾ?",
-        or: "ಅಥವಾ",
-        sign_in_with_google: "ಗೂಗಲ್‌ನೊಂದಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ",
-        are_you_a_service_center: "ನೀವು ಸೇವಾ ಕೇಂದ್ರವೇ?",
-        service_center_login: "ಸೇವಾ ಕೇಂದ್ರ ಲಾಗಿನ್",
-        are_you_a_customer: "ನೀವು ಗ್ರಾಹಕರೇ?",
-        customer_login_here: "ಇಲ್ಲಿ ಲಾಗಿನ್ ಮಾಡಿ",
-        logout: "ಲಾಗ್ ಔಟ್",
-        nav_home: "ಹೋಮ್",
-        nav_book_service: "ಸೇವೆ ಬುಕ್ ಮಾಡಿ",
-        nav_payments: "ಪಾವತಿಗಳು",
-        nav_feedback: "ಪ್ರತಿಕ್ರಿಯೆ",
-        nav_contact: "ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ",
-        nav_profile: "ಪ್ರೊಫೈಲ್",
-        nav_chat: "ಚಾಟ್",
-        hero_heading: "ತೊಂದರೆ-ಮುಕ್ತ ಕಾರ್ ಸೇವೆ ಅನುಭವಿಸಿ!",
-        hero_subheading: "ಪಿಕ್ಅಪ್‌ನಿಂದ ಡೆಲಿವರಿವರೆಗೆ, ನಾವು ಕಾರು ನಿರ್ವಹಣೆಯನ್ನು ಸುಲಭ ಮತ್ತು ಪಾರದರ್ಶಕಗೊಳಿಸುತ್ತೇವೆ. ತ್ವರಿತ, ವಿಶ್ವಾಸಾರ್ಹ, ಮತ್ತು ಕೇವಲ ಒಂದು ಟ್ಯಾಪ್ ದೂರದಲ್ಲಿ.",
-        book_now_cta: "ನಿಮ್ಮ ಸೇವೆಯನ್ನು ಈಗಲೇ ಬುಕ್ ಮಾಡಿ",
-        feedback_thank_you: "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಗೆ ಧನ್ಯವಾದಗಳು!",
-        profile_updated: "ಪ್ರೊಫೈಲ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ!",
-        service_request_success: "ಸೇವಾ ವಿನಂತಿ ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!",
-        payment_success: "ಪಾವತಿ ಯಶಸ್ವಿಯಾಗಿ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗಿದೆ!",
-        contact_message_sent: "ನಿಮ್ಮ ಸಂದೇಶವನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಕಳುಹಿಸಲಾಗಿದೆ!",
-        no_feedback_yet: "ಇನ್ನೂ ಯಾವುದೇ ಪ್ರತಿಕ್ರಿಯೆ ಸಲ್ಲಿಸಿಲ್ಲ.",
-    },
-};
 
 // --- UI Management Functions ---
 
@@ -234,7 +52,7 @@ function displayMessage(message, type) {
 
 /**
  * Shows a specific screen and hides all others.
- * @param {string} screenId - The ID of the screen to show (e.g., 'language-selection-screen', 'customer-auth-screen', 'app-container').
+ * @param {string} screenId - The ID of the screen to show (e.g., 'customer-auth-screen', 'service-center-auth-screen', 'app-container').
  */
 function showScreen(screenId) {
     const screens = document.querySelectorAll('.screen');
@@ -248,7 +66,12 @@ function showScreen(screenId) {
     if (screenId === 'app-container') {
         document.getElementById('app-container').style.display = 'flex'; // It's a flex container
         // When entering app-container, default to home section
-        showContentSection('home-section');
+        // Or to dashboard if service center
+        if (currentUserRole === 'serviceCenter') {
+            showContentSection('service-center-dashboard');
+        } else {
+            showContentSection('home-section');
+        }
     } else {
         document.getElementById('app-container').style.display = 'none';
     }
@@ -287,7 +110,7 @@ function showContentSection(sectionId) {
         if (sectionId === 'service-center-dashboard') {
             renderServiceRequests();
             renderCustomerFeedbackDashboard();
-            renderPaymentHistory();
+            renderPaymentHistoryDashboard(); // Renamed to avoid confusion with customer payment history
         } else if (sectionId === 'profile-section') {
             loadUserProfile();
         } else if (sectionId === 'chat-section') {
@@ -298,7 +121,11 @@ function showContentSection(sectionId) {
                 displayMessage("Please log in to use chat.", "info");
             }
         } else if (sectionId === 'feedback-section') {
-            renderCustomerFeedbackList();
+            renderCustomerFeedbackList(); // For customer's own feedback
+        } else if (sectionId === 'payments-section') {
+            // Logic to load specific payment details for the customer if needed
+            // For now, load general payment history if any exists for the user
+            renderCustomerPaymentHistory();
         }
         // ... add more conditions for other sections that need data loaded
     }
@@ -308,7 +135,7 @@ function showContentSection(sectionId) {
  * Toggles between login and register forms on the customer authentication screen.
  * @param {'login'|'register'} formType - The form to show.
  */
-function showCustomerAuth(formType) {
+window.showCustomerAuth = (formType) => { // Made global for onclick in HTML
     document.getElementById('customerLoginForm').style.display = 'none';
     document.getElementById('customerRegisterForm').style.display = 'none';
 
@@ -323,23 +150,8 @@ function showCustomerAuth(formType) {
     }
 }
 
-/**
- * Applies translations based on the selected language.
- */
-function applyTranslations() {
-    document.querySelectorAll('[data-translate]').forEach(element => {
-        const key = element.getAttribute('data-translate');
-        if (translations[currentLanguage] && translations[currentLanguage][key]) {
-            element.textContent = translations[currentLanguage][key];
-        }
-    });
-}
-
 // --- Authentication Functions ---
 
-/**
- * Handles user login with email and password.
- */
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('customerLoginEmail').value;
@@ -347,7 +159,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
     try {
         await signInWithEmailAndPassword(auth, email, password);
-        displayMessage(translations[currentLanguage].login_success || "Logged in successfully!", "success");
+        displayMessage("Logged in successfully!", "success");
         // onAuthStateChanged will handle showing app-container
     } catch (error) {
         console.error("Login Error:", error.code, error.message);
@@ -355,9 +167,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 });
 
-/**
- * Handles new user registration with email and password.
- */
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('customerRegisterName').value;
@@ -376,7 +185,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         });
         await set(ref(db, `users/${user.uid}/role`), 'customer'); // Separate role for easy lookup
 
-        displayMessage(translations[currentLanguage].registration_success || "Registration successful! Welcome!", "success");
+        displayMessage("Registration successful! Welcome!", "success");
         // onAuthStateChanged will handle showing app-container
     } catch (error) {
         console.error("Registration Error:", error.code, error.message);
@@ -384,9 +193,6 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     }
 });
 
-/**
- * Handles Service Center login.
- */
 document.getElementById('serviceCenterLoginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('centerLoginEmail').value;
@@ -416,7 +222,6 @@ document.getElementById('serviceCenterLoginForm').addEventListener('submit', asy
     }
 });
 
-
 /**
  * Initiates password reset for a given user type.
  * @param {'customer'|'serviceCenter'} userType
@@ -440,9 +245,6 @@ window.forgotPassword = async (userType) => {
     }
 };
 
-/**
- * Handles Google Sign-In.
- */
 document.getElementById('googleSignInBtn').addEventListener('click', async () => {
     const provider = new GoogleAuthProvider();
     try {
@@ -475,14 +277,11 @@ document.getElementById('googleSignInBtn').addEventListener('click', async () =>
     }
 });
 
-/**
- * Handles user logout.
- */
 document.getElementById('logoutBtn').addEventListener('click', async () => {
     try {
         await signOut(auth);
         displayMessage("Logged out successfully!", "info");
-        // onAuthStateChanged will handle showing the language selection screen
+        // onAuthStateChanged will handle showing the authentication screen
     }
     catch (error) {
         console.error("Logout Error:", error.message);
@@ -559,7 +358,7 @@ document.getElementById('serviceBookingForm').addEventListener('submit', async (
     try {
         const newRequestRef = push(ref(db, 'serviceRequests'));
         await set(newRequestRef, serviceRequestData);
-        displayMessage(translations[currentLanguage].service_request_success, "success");
+        displayMessage("Service request submitted successfully!", "success");
         document.getElementById('serviceBookingForm').reset();
         document.getElementById('otherServiceTypeGroup').style.display = 'none';
     }
@@ -626,7 +425,7 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
         };
         try {
             await set(ref(db, `users/${user.uid}/profile`), profileData);
-            displayMessage(translations[currentLanguage].profile_updated, "success");
+            displayMessage("Profile updated successfully!", "success");
         }
         catch (error) {
             console.error("Error updating profile:", error);
@@ -770,9 +569,9 @@ function renderCustomerFeedbackDashboard() {
     });
 }
 
-function renderPaymentHistory() {
-    const paymentHistoryList = document.getElementById('paymentHistoryList');
-    const noPaymentHistoryMessage = document.getElementById('noPaymentHistoryMessage');
+function renderPaymentHistoryDashboard() {
+    const paymentHistoryList = document.getElementById('paymentHistoryListDashboard'); // Changed ID to reflect dashboard
+    const noPaymentHistoryMessage = document.getElementById('noPaymentHistoryMessageDashboard'); // Changed ID
 
     const paymentsRef = ref(db, 'payments'); // Assuming payments are stored here
 
@@ -813,6 +612,7 @@ function renderPaymentHistory() {
     });
 }
 
+
 // --- Customer Chat Functionality ---
 function renderChatMessages(userId) {
     const chatMessagesContainer = document.getElementById('chatMessages');
@@ -852,6 +652,7 @@ function renderChatMessages(userId) {
             // Scroll to the bottom of the chat after messages are loaded/updated
             chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
         } else {
+            // Add a default welcome message if no chat history exists
             chatMessagesContainer.innerHTML = '<div class="message received"><p><strong>Service Center:</strong> Welcome to chat! How can we assist you?</p><span class="timestamp">' + new Date().toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit'
@@ -875,7 +676,7 @@ document.getElementById('chatSendBtn').addEventListener('click', async () => {
 
     if (messageText) {
         // Determine sender based on the globally tracked role
-        const sender = (currentUserRole === 'customer') ? 'customer' : 'serviceCenter'; // Or more robustly check from user's DB profile
+        const sender = (currentUserRole === 'customer') ? 'customer' : 'serviceCenter';
 
         try {
             const newMessageRef = push(ref(db, `chats/${user.uid}`)); // Chat specific to this user's UID
@@ -894,9 +695,7 @@ document.getElementById('chatSendBtn').addEventListener('click', async () => {
 });
 
 
-// --- Payments Section Functionality (Example - needs integration with service booking/completion) ---
-// This part is more conceptual. In a real app, payment details would be pulled
-// from a specific service request that is due for payment.
+// --- Payments Section Functionality (Customer View) ---
 document.getElementById('paymentMethod').addEventListener('change', (event) => {
     const onlinePaymentFields = document.getElementById('onlinePaymentFields');
     if (event.target.value === 'online') {
@@ -918,8 +717,9 @@ document.getElementById('paymentForm').addEventListener('submit', async (e) => {
 
     // In a real scenario, you'd get the actual serviceId and amount
     // from a pending service request tied to the current user.
+    // For this example, we'll use mock data.
     const mockServiceId = "SVC" + Math.floor(Math.random() * 100000);
-    const mockAmount = "1500.00"; // Example amount
+    const mockAmount = "1500.00"; // Example amount for a dummy payment
 
     const paymentData = {
         userId: user.uid,
@@ -941,7 +741,7 @@ document.getElementById('paymentForm').addEventListener('submit', async (e) => {
 
     try {
         await push(ref(db, 'payments'), paymentData);
-        displayMessage(translations[currentLanguage].payment_success, "success");
+        displayMessage("Payment processed successfully!", "success");
         document.getElementById('paymentForm').reset();
         document.getElementById('onlinePaymentFields').style.display = 'none';
         // Clear payment summary (if it was dynamically populated)
@@ -949,6 +749,7 @@ document.getElementById('paymentForm').addEventListener('submit', async (e) => {
         document.getElementById('paymentCustomerName').textContent = 'N/A';
         document.getElementById('paymentServiceType').textContent = 'N/A';
         document.getElementById('paymentAmountDue').textContent = '₹0.00';
+        renderCustomerPaymentHistory(); // Re-render customer's payment history
     }
     catch (error) {
         console.error("Error processing payment:", error);
@@ -956,8 +757,63 @@ document.getElementById('paymentForm').addEventListener('submit', async (e) => {
     }
 });
 
+function renderCustomerPaymentHistory() {
+    const paymentHistoryList = document.getElementById('paymentHistoryList');
+    const noPaymentHistoryMessage = document.getElementById('noPaymentHistoryMessage');
+    const user = auth.currentUser;
 
-// --- Feedback Section Functionality ---
+    if (!user) {
+        paymentHistoryList.innerHTML = `<li class="empty-message">No payment history found. Please log in.</li>`;
+        return;
+    }
+
+    const paymentsRef = ref(db, 'payments');
+
+    onValue(paymentsRef, (snapshot) => {
+        paymentHistoryList.innerHTML = '';
+        let hasUserPayments = false;
+
+        if (snapshot.exists()) {
+            const userPayments = [];
+            snapshot.forEach((childSnapshot) => {
+                const paymentItem = childSnapshot.val();
+                if (paymentItem.userId === user.uid) { // Filter by current user
+                    userPayments.push({
+                        id: childSnapshot.key,
+                        ...paymentItem
+                    });
+                }
+            });
+
+            if (userPayments.length > 0) {
+                userPayments.sort((a, b) => b.timestamp - a.timestamp); // Newest first
+                hasUserPayments = true;
+
+                userPayments.forEach((payment) => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <p class="payment-details"><strong>Service ID:</strong> ${payment.serviceId || 'N/A'}</p>
+                        <p class="payment-details"><strong>Amount:</strong> ₹${payment.amount || '0.00'}</p>
+                        <p class="payment-details"><strong>Method:</strong> ${payment.method || 'N/A'}</p>
+                        <p class="payment-details"><strong>Date:</strong> ${new Date(payment.timestamp).toLocaleString()}</p>
+                        <p class="payment-details"><strong>Status:</strong> ${payment.status || 'Completed'}</p>
+                    `;
+                    paymentHistoryList.appendChild(listItem);
+                });
+            }
+        }
+
+        if (!hasUserPayments) {
+            const messageLi = document.createElement('li');
+            messageLi.className = 'empty-message';
+            messageLi.textContent = 'No payment history found.';
+            paymentHistoryList.appendChild(messageLi);
+        }
+    });
+}
+
+
+// --- Feedback Section Functionality (Customer View) ---
 let selectedRating = 0; // To store the selected star rating
 
 document.getElementById('starRating').addEventListener('click', (event) => {
@@ -1008,13 +864,14 @@ document.getElementById('feedbackForm').addEventListener('submit', async (e) => 
 
     try {
         await push(ref(db, 'feedback'), feedbackData);
-        displayMessage(translations[currentLanguage].feedback_thank_you, "success");
+        displayMessage("Thank you for your feedback!", "success");
         document.getElementById('feedbackForm').reset();
         selectedRating = 0; // Reset stars
         document.querySelectorAll('#starRating i').forEach(star => {
             star.classList.remove('fas');
             star.classList.add('far');
         });
+        renderCustomerFeedbackList(); // Re-render customer's own feedback list
     }
     catch (error) {
         console.error("Error submitting feedback:", error);
@@ -1025,11 +882,10 @@ document.getElementById('feedbackForm').addEventListener('submit', async (e) => 
 // Function to render customer feedback on the customer's own feedback section
 function renderCustomerFeedbackList() {
     const customerFeedbackList = document.getElementById('customerFeedbackList');
-    const noFeedbackMessage = document.getElementById('noFeedbackMessage');
     const user = auth.currentUser;
 
     if (!user) {
-        customerFeedbackList.innerHTML = `<li class="empty-message">${translations[currentLanguage].no_feedback_yet || 'No feedback submitted yet.'}</li>`;
+        customerFeedbackList.innerHTML = `<li class="empty-message">No feedback submitted yet.</li>`;
         return;
     }
 
@@ -1071,10 +927,9 @@ function renderCustomerFeedbackList() {
         if (!hasUserFeedback) {
             const messageLi = document.createElement('li');
             messageLi.className = 'empty-message';
-            messageLi.textContent = translations[currentLanguage].no_feedback_yet || 'No feedback submitted yet.';
+            messageLi.textContent = 'No feedback submitted yet.';
             customerFeedbackList.appendChild(messageLi);
         }
-        // Removed else { noFeedbackMessage.style.display = 'none'; } because it's handled by clearing innerHTML
     });
 }
 
@@ -1093,7 +948,7 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
 
     try {
         await push(ref(db, 'contactMessages'), contactData);
-        displayMessage(translations[currentLanguage].contact_message_sent, "success");
+        displayMessage("Your message has been sent successfully!", "success");
         document.getElementById('contactForm').reset();
     }
     catch (error) {
@@ -1105,12 +960,15 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
 
 // --- Initial Setup and Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Language selection buttons
-    document.querySelectorAll('.lang-btn').forEach(button => {
-        button.addEventListener('click', (event) => {
-            currentLanguage = event.target.dataset.lang;
-            applyTranslations(); // Apply initial translations
-            showScreen('customer-auth-screen'); // Move to auth screen after language selection
+    // Initial display is the customer authentication screen
+    showScreen('customer-auth-screen');
+
+    // Event listeners for navigation links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default anchor link behavior
+            const sectionId = link.getAttribute('href').substring(1); // Get section ID from href
+            showContentSection(sectionId);
         });
     });
 
@@ -1135,15 +993,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             document.getElementById('customerContact').value = profile.mobile || '';
                             document.getElementById('customerAddress').value = profile.address || '';
                             document.getElementById('carModel').value = profile.carModel || '';
-                            // Pre-fill feedback service ID if there's a recent service? (more complex)
-                            // For now, leave serviceIdFeedback empty for manual input or a later auto-fill mechanism
                         }
                     }, {
                         onlyOnce: true
                     });
-                    // Also load customer-specific feedback if on feedback section
-                    if (currentActiveSectionId === 'feedback-section') {
-                        renderCustomerFeedbackList();
+                    // Show customer's home section or a default if already on a content section
+                    if (currentActiveSectionId !== 'app-container' && currentActiveSectionId !== 'service-center-dashboard') {
+                         showContentSection('home-section');
                     }
                 } else if (currentUserRole === 'serviceCenter') {
                     showContentSection('service-center-dashboard'); // Redirect service center to dashboard
@@ -1154,13 +1010,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // User is signed out
             currentUserRole = null;
-            showScreen('language-selection-screen'); // Go back to language/auth screen
+            showScreen('customer-auth-screen'); // Go back to customer auth screen
             updateNavBasedOnRole(null); // Hide all nav items
             // Clear any user-specific data from UI if applicable
         }
     });
-
-    // Initial translation application (before user selects, it will use default 'en')
-    applyTranslations();
 });
-```
