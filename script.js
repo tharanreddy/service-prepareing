@@ -1,306 +1,207 @@
-// script.js
-// Firebase v9.23.0 Modular SDK imports
-// These functions are imported directly from Firebase CDN.
-// The 'auth' and 'database' instances are obtained from the global window object,
-// where they are exposed by the <script type="module"> in index.html.
-
+// Firebase Imports
 import {
-    getAuth, // Although not directly used to get instance here, good to import for clarity
+    getAuth,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
+    sendPasswordResetEmail,
     signOut,
-    onAuthStateChanged,
-    GoogleAuthProvider, // Re-added for Google Sign-In
-    signInWithPopup,    // Re-added for Google Sign-In
-    sendPasswordResetEmail
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import {
-    getDatabase, // Although not directly used to get instance here, good to import for clarity
+    getDatabase,
     ref,
+    set,
     push,
-    onChildAdded,
-    set // Used for updating service request status
+    onValue,
+    remove,
+    update
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-// Get Firebase instances from the global window object (initialized in index.html)
-// These variables will hold the initialized Firebase Auth and Database service objects.
+// Ensure Firebase instances are exposed globally from index.html
 const auth = window.firebaseAuth;
-const database = window.firebaseDB;
-const googleProvider = new GoogleAuthProvider(); // Initialize Google Auth Provider
+const db = window.firebaseDB;
 
+// Global state variables
+let currentActiveSectionId = 'language-selection-screen'; // Initial active screen
+let currentUserRole = null; // 'customer', 'serviceCenter', or null
+let currentLanguage = 'en'; // Default language
 
-// --- Global Variables ---
-let currentBookingDetails = {};
-let lastServiceId = null;
-let lastCustomerName = null;
-let lastServiceAmount = null;
-let lastServiceType = null;
-let customerSelectedRating = 0; // To store customer's star rating
-let currentUserRole = null; // 'customer' or 'serviceCenter'
-let currentUserName = "Guest"; // Default for chat sender, will be updated on login
-
-// --- Demo User Storage (NOT FOR PRODUCTION) ---
-// This simulates user storage using localStorage for demo purposes.
-// In a real application, you would use Firebase Authentication and Firestore/Realtime Database.
-let demoUsers = JSON.parse(localStorage.getItem('demoUsers')) || {
-    customer: { email: "customer@example.com", password: "password", name: "Demo Customer" },
-    serviceCenter: { email: "center@example.com", password: "password", name: "Service Center" }
-};
-
-function saveDemoUsers() {
-    localStorage.setItem('demoUsers', JSON.stringify(demoUsers));
-}
-
-// Profile Page Functions
-// Load user profile from localStorage or set defaults
-let userProfile = JSON.parse(localStorage.getItem('userProfile')) || {
-    name: "",
-    email: "",
-    mobile: "",
-    address: "",
-    carMake: "",
-    carModel: "",
-    carYear: null,
-    licensePlate: ""
-};
-
-function saveProfileData() {
-    localStorage.setItem('userProfile', JSON.stringify(userProfile));
-    console.log("Profile data saved:", userProfile);
-}
-
-function loadProfileData() {
-    // Ensure profile data is loaded before displaying
-    userProfile = JSON.parse(localStorage.getItem('userProfile')) || userProfile;
-
-    document.getElementById('profileName').value = userProfile.name || '';
-    document.getElementById('profileEmail').value = userProfile.email || '';
-    document.getElementById('profileMobile').value = userProfile.mobile || '';
-    document.getElementById('profileAddress').value = userProfile.address || '';
-    document.getElementById('profileCarMake').value = userProfile.carMake || '';
-    document.getElementById('profileCarModel').value = userProfile.carModel || '';
-    document.getElementById('profileCarYear').value = userProfile.carYear || '';
-    document.getElementById('profileLicensePlate').value = userProfile.licensePlate || '';
-}
-
-// Service Center Specific Elements & Data (for local demo rendering if Firebase isn't used)
-const customerFeedbackList = document.getElementById("customerFeedbackList");
-const noFeedbackMessage = document.getElementById("noFeedbackMessage");
-const paymentHistoryList = document.getElementById("paymentHistoryList");
-const noPaymentHistoryMessage = document.getElementById("noPaymentHistoryMessage");
-const serviceRequestsList = document.getElementById("serviceRequestsList");
-const noRequestsMessage = document.getElementById("noRequestsMessage");
-
-const serviceCenterFeedbacks = []; // For demo display
-const serviceCenterPayments = []; // For demo display
-
-
-// Translation content for demo
+// Language Translations (Add more languages and phrases as needed)
 const translations = {
-    "en": {
-        "hero_heading": "Experience Hassle-Free Car Servicing!",
-        "hero_subheading": "From pickup to delivery, we make car maintenance easy and transparent. Quick, reliable, and just a tap away.",
-        "book_now_cta": "Book Your Service Now",
-        "nav_home": "Home",
-        "nav_book_service": "Book Service",
-        "nav_payments": "Payments",
-        "nav_feedback": "Feedback",
-        "nav_contact": "Contact Us",
-        "nav_profile": "Profile",
-        "nav_chat": "Chat"
+    en: {
+        choose_language: "Choose Your Language",
+        login: "Login",
+        register: "Register",
+        customer_login: "Customer Login",
+        customer_register: "Customer Register",
+        email: "Email",
+        password: "Password",
+        full_name: "Full Name",
+        forgot_password: "Forgot Password?",
+        or: "OR",
+        sign_in_with_google: "Sign in with Google",
+        are_you_a_service_center: "Are you a Service Center?",
+        service_center_login: "Service Center Login",
+        are_you_a_customer: "Are you a Customer?",
+        customer_login_here: "Login here",
+        logout: "Logout",
+        nav_home: "Home",
+        nav_book_service: "Book Service",
+        nav_payments: "Payments",
+        nav_feedback: "Feedback",
+        nav_contact: "Contact Us",
+        nav_profile: "Profile",
+        nav_chat: "Chat",
+        hero_heading: "Experience Hassle-Free Car Servicing!",
+        hero_subheading: "From pickup to delivery, we make car maintenance easy and transparent. Quick, reliable, and just a tap away.",
+        book_now_cta: "Book Your Service Now",
+        feedback_thank_you: "Thank you for your feedback!",
+        profile_updated: "Profile updated successfully!",
+        service_request_success: "Service request submitted successfully!",
+        payment_success: "Payment processed successfully!",
+        contact_message_sent: "Your message has been sent successfully!",
+        // Add more phrases as your UI expands
     },
-    "hi": {
-        "hero_heading": "परेशानी मुक्त कार सर्विसिंग का अनुभव करें!",
-        "hero_subheading": "पिकअप से लेकर डिलीवरी तक, हम कार रखरखाव को आसान और पारदर्शी बनाते हैं। त्वरित, विश्वसनीय, और बस एक टैप दूर।",
-        "book_now_cta": "अपनी सेवा अभी बुक करें",
-        "nav_home": "होम",
-        "nav_book_service": "सेवा बुक करें",
-        "nav_payments": "भुगतान",
-        "nav_feedback": "प्रतिक्रिया",
-        "nav_contact": "हमसे संपर्क करें",
-        "nav_profile": "प्रोफ़ाइल",
-        "nav_chat": "चैट"
+    hi: {
+        choose_language: "अपनी भाषा चुनें",
+        login: "लॉग इन करें",
+        register: "पंजीकरण करें",
+        customer_login: "ग्राहक लॉगिन",
+        customer_register: "ग्राहक पंजीकरण",
+        email: "ईमेल",
+        password: "पासवर्ड",
+        full_name: "पूरा नाम",
+        forgot_password: "पासवर्ड भूल गए?",
+        or: "या",
+        sign_in_with_google: "गूगल से साइन इन करें",
+        are_you_a_service_center: "क्या आप एक सेवा केंद्र हैं?",
+        service_center_login: "सेवा केंद्र लॉगिन",
+        are_you_a_customer: "क्या आप ग्राहक हैं?",
+        customer_login_here: "यहां लॉग इन करें",
+        logout: "लॉग आउट",
+        nav_home: "होम",
+        nav_book_service: "सेवा बुक करें",
+        nav_payments: "भुगतान",
+        nav_feedback: "प्रतिक्रिया",
+        nav_contact: "हमसे संपर्क करें",
+        nav_profile: "प्रोफ़ाइल",
+        nav_chat: "चैट",
+        hero_heading: "परेशानी मुक्त कार सर्विसिंग का अनुभव करें!",
+        hero_subheading: "पिकअप से लेकर डिलीवरी तक, हम कार रखरखाव को आसान और पारदर्शी बनाते हैं। त्वरित, विश्वसनीय, और बस एक टैप दूर।",
+        book_now_cta: "अपनी सेवा अभी बुक करें",
+        feedback_thank_you: "आपकी प्रतिक्रिया के लिए धन्यवाद!",
+        profile_updated: "प्रोफ़ाइल सफलतापूर्वक अपडेट की गई!",
+        service_request_success: "सेवा अनुरोध सफलतापूर्वक सबमिट किया गया!",
+        payment_success: "भुगतान सफलतापूर्वक संसाधित हुआ!",
+        contact_message_sent: "आपका संदेश सफलतापूर्वक भेजा गया है!",
     },
-    "mr": {
-        "hero_heading": "झटपट कार सर्विसिंगचा अनुभव घ्या!",
-        "hero_subheading": "पिकअपपासून डिलिव्हरीपर्यंत, आम्ही कारची देखभाल सोपी आणि पारदर्शक बनवतो. जलद, विश्वसनीय आणि फक्त एका टॅपवर.",
-        "book_now_cta": "आता तुमची सेवा बुक करा",
-        "nav_home": "मुख्यपृष्ठ",
-        "nav_book_service": "सेवा बुक करा",
-        "nav_payments": "पेमेंट्स",
-        "nav_feedback": "फीडबॅक",
-        "nav_contact": "आम्हाला संपर्क करा",
-        "nav_profile": "प्रोफाईल",
-        "nav_chat": "चॅट"
-    },
-    "te": {
-        "hero_heading": "తలనొప్పి లేని కార్ సర్వీసింగ్ అనుభవాన్ని పొందండి!",
-        "hero_subheading": "పిక్అప్ నుండి డెలివరీ వరకు, మేము కార్ నిర్వహణను సులభతరం మరియు పారదర్శకంగా చేస్తాము. త్వరితంగా, నమ్మదగినది, మరియు కేవలం ఒక ట్యాప్ దూరంలో.",
-        "book_now_cta": "మీ సేవను ఇప్పుడు బుక్ చేయండి",
-        "nav_home": "హోమ్",
-        "nav_book_service": "సేవను బుక్ చేయండి",
-        "nav_payments": "చెల్లింపులు",
-        "nav_feedback": "అభిప్రాయం",
-        "nav_contact": "మమ్మల్ని సంప్రదించండి",
-        "nav_profile": "ప్రొఫైల్",
-        "nav_chat": "చాట్"
-    },
-    "kn": {
-        "hero_heading": "ತೊಂದರೆ-ಮುಕ್ತ ಕಾರ್ ಸೇವೆ ಅನುಭವಿಸಿ!",
-        "hero_subheading": "ಪಿಕ್ಅಪ್‌ನಿಂದ ವಿತರಣೆಯವರೆಗೆ, ನಾವು ಕಾರ್ ನಿರ್ವಹಣೆಯನ್ನು ಸುಲಭ ಮತ್ತು ಪಾರದರ್ಶಕಗೊಳಿಸುತ್ತೇವೆ. ವೇಗವಾಗಿ, ವಿಶ್ವಾಸಾರ್ಹ, ಮತ್ತು ಕೇವಲ ಒಂದು ಟ್ಯಾಪ್ ದೂರದಲ್ಲಿ.",
-        "book_now_cta": "ನಿಮ್ಮ ಸೇವೆಯನ್ನು ಈಗಲೇ ಬುಕ್ ಮಾಡಿ",
-        "nav_home": "ಮುಖಪುಟ",
-        "nav_book_service": "ಸೇವೆ ಬುಕ್ ಮಾಡಿ",
-        "nav_payments": "ಪಾವತಿಗಳು",
-        "nav_feedback": "ಪ್ರತಿಕ್ರಿಯೆ",
-        "nav_contact": "ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ",
-        "nav_profile": "ಪ್ರೊಫೈಲ್",
-        "nav_chat": "ಚಾಟ್"
-    }
+    // Add other languages (mr, te, kn) here
 };
 
-// --- Utility Functions ---
+// --- UI Management Functions ---
+
+/**
+ * Displays a custom message box at the top of the screen.
+ * @param {string} message - The message to display.
+ * @param {'success'|'error'|'info'} type - Type of message for styling.
+ */
+function displayMessage(message, type) {
+    const msgBox = document.getElementById('customMessageBox');
+    msgBox.textContent = message;
+    msgBox.className = `custom-message-box show ${type}`; // Add type class
+    msgBox.style.display = 'block'; // Ensure it's visible
+
+    setTimeout(() => {
+        msgBox.classList.remove('show');
+        // Hide after transition, giving time for fade out
+        setTimeout(() => {
+            msgBox.style.display = 'none';
+            msgBox.className = 'custom-message-box'; // Reset class
+        }, 300); // Should match CSS transition duration
+    }, 3000); // Message visible for 3 seconds
+}
+
+/**
+ * Shows a specific screen and hides all others.
+ * @param {string} screenId - The ID of the screen to show (e.g., 'language-selection-screen', 'customer-auth-screen', 'app-container').
+ */
 function showScreen(screenId) {
-    console.log(`Attempting to show screen: ${screenId}`);
-    document.querySelectorAll('.screen').forEach(screen => {
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(screen => {
         screen.style.display = 'none';
     });
-    const targetScreen = document.getElementById(screenId);
-    if (targetScreen) {
-        targetScreen.style.display = 'flex';
-        console.log(`Screen '${screenId}' display set to 'flex'. Current display: ${targetScreen.style.display}`);
-    } else {
-        console.error(`Error: Screen with ID '${screenId}' not found.`);
-    }
+    document.getElementById(screenId).style.display = 'flex'; // Use flex for auth/lang screens
+    currentActiveSectionId = screenId; // Update global tracking
 
-    const appContainer = document.querySelector('.app-container');
-    if (['language-selection-screen', 'customer-auth-screen', 'service-center-auth-screen'].includes(screenId)) {
-        if (appContainer) {
-            appContainer.style.display = 'none';
-            console.log("App container hidden.");
-        }
+    // Special handling for app-container
+    if (screenId === 'app-container') {
+        document.getElementById('app-container').style.display = 'flex'; // It's a flex container
+        // When entering app-container, default to home section
+        showContentSection('home-section');
     } else {
-        if (appContainer) {
-            appContainer.style.display = 'flex';
-            console.log("App container shown (display: flex).");
-        }
+        document.getElementById('app-container').style.display = 'none';
     }
+    console.log(`Switched to screen: ${screenId}`);
 }
 
+/**
+ * Shows a specific content section within the main application container.
+ * Hides all other content sections.
+ * Also updates active class in navbar.
+ * @param {string} sectionId - The ID of the content section to show (e.g., 'home-section', 'book-service-section').
+ */
 function showContentSection(sectionId) {
-    console.log(`Attempting to show content section: ${sectionId}`);
-    document.querySelectorAll('.content-section').forEach(section => {
+    const contentSections = document.querySelectorAll('.content-section');
+    contentSections.forEach(section => {
         section.style.display = 'none';
-        section.classList.remove('active');
     });
-    const targetSection = document.getElementById(sectionId);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-        targetSection.classList.add('active');
-        console.log(`Content section '${sectionId}' display set to 'block' and 'active'. Current display: ${targetSection.style.display}`);
-    } else {
-        console.error(`Error: Content section with ID '${sectionId}' not found.`);
-    }
 
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('active');
-    });
-    const navLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
-    if (navLink) {
-        navLink.classList.add('active');
-        console.log(`Nav link for '${sectionId}' set to active.`);
-    }
+    const activeSection = document.getElementById(sectionId);
+    if (activeSection) {
+        activeSection.style.display = 'block';
+        currentActiveSectionId = sectionId; // Update global tracking
+        console.log(`Switched to content section: ${sectionId}`);
 
-    // Adjust nav items visibility based on role
-    document.querySelectorAll('.customer-nav-item').forEach(item => {
-        if (currentUserRole === 'customer') {
-            item.style.display = 'list-item';
-        } else {
-            item.style.display = 'none';
-        }
-    });
-    // Service center dashboard itself might not have these nav items,
-    // but ensure customer ones are hidden if service center is active.
-    if (currentUserRole === 'serviceCenter' && sectionId === 'service-center-dashboard') {
-        document.querySelectorAll('.customer-nav-item').forEach(item => {
-            item.style.display = 'none';
-        });
-    }
-
-
-    if (sectionId === 'profile-section' && currentUserRole === 'customer') {
-        loadProfileData();
-    }
-}
-
-function generateServiceId() {
-    return '#SVC' + Math.floor(10000 + Math.random() * 90000);
-}
-
-function updateNoRequestsMessage() {
-    if (serviceRequestsList.children.length === 0 || (serviceRequestsList.children.length === 1 && serviceRequestsList.children[0].classList.contains("empty-message"))) {
-        noRequestsMessage.style.display = 'block';
-    } else {
-        noRequestsMessage.style.display = 'none';
-    }
-}
-
-function renderFeedbacks() {
-    customerFeedbackList.innerHTML = '';
-    if (serviceCenterFeedbacks.length === 0) {
-        noFeedbackMessage.style.display = 'block';
-    } else {
-        noFeedbackMessage.style.display = 'none';
-        serviceCenterFeedbacks.forEach(feedback => {
-            const li = document.createElement('li');
-            let stars = '';
-            for (let i = 0; i < 5; i++) {
-                stars += `<i class="fa${i < feedback.rating ? 's' : 'r'} fa-star"></i>`;
+        // Update active class in navbar
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === `#${sectionId}`) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
             }
-            li.innerHTML = `
-                <p><strong>Service ID:</strong> ${feedback.serviceId}</p>
-                <p class="rating">${stars}</p>
-                <p>${feedback.message}</p>
-                <p class="author">- Anonymous Customer</p>
-            `;
-            customerFeedbackList.appendChild(li);
         });
-    }
-}
 
-function renderPaymentHistory() {
-    paymentHistoryList.innerHTML = '';
-    if (serviceCenterPayments.length === 0) {
-        noPaymentHistoryMessage.style.display = 'block';
-    } else {
-        noPaymentHistoryMessage.style.display = 'none';
-        serviceCenterPayments.forEach(payment => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <p><strong>Service ID:</strong> ${payment.serviceId}</p>
-                <p><strong>Amount:</strong> ₹${payment.amount.toFixed(2)}</p>
-                <p><strong>Status:</strong> ${payment.status}</p>
-                <p><strong>Date:</strong> ${payment.date}</p>
-            `;
-            paymentHistoryList.appendChild(li);
-        });
-    }
-}
-
-function applyTranslation(lang) {
-    const elementsToTranslate = document.querySelectorAll('[data-translate]');
-    elementsToTranslate.forEach(element => {
-        const key = element.getAttribute('data-translate');
-        if (translations[lang] && translations[lang][key]) {
-            element.textContent = translations[lang][key];
+        // Trigger data load/render for specific sections
+        if (sectionId === 'service-center-dashboard') {
+            renderServiceRequests();
+            renderCustomerFeedbackDashboard();
+            renderPaymentHistory();
+        } else if (sectionId === 'profile-section') {
+            loadUserProfile();
+        } else if (sectionId === 'chat-section') {
+            const user = auth.currentUser;
+            if (user) {
+                renderChatMessages(user.uid);
+            } else {
+                displayMessage("Please log in to use chat.", "info");
+            }
         }
-    });
+        // ... add more conditions for other sections that need data loaded
+    }
 }
 
+/**
+ * Toggles between login and register forms on the customer authentication screen.
+ * @param {'login'|'register'} formType - The form to show.
+ */
 function showCustomerAuth(formType) {
     document.getElementById('customerLoginForm').style.display = 'none';
     document.getElementById('customerRegisterForm').style.display = 'none';
-    document.querySelector('.auth-toggle .toggle-btn.active')?.classList.remove('active'); // Use optional chaining for safety
+
+    document.querySelector('.auth-toggle .toggle-btn.active')?.classList.remove('active');
 
     if (formType === 'login') {
         document.getElementById('customerLoginForm').style.display = 'block';
@@ -311,373 +212,627 @@ function showCustomerAuth(formType) {
     }
 }
 
-
-// --- Event Listeners and Handlers ---
-
-// Language Selection
-document.querySelectorAll('.lang-btn').forEach(button => {
-    button.addEventListener('click', () => {
-        const lang = button.getAttribute('data-lang');
-        applyTranslation(lang);
-        showScreen('customer-auth-screen'); // Move to auth screen after lang selection
+/**
+ * Applies translations based on the selected language.
+ */
+function applyTranslations() {
+    document.querySelectorAll('[data-translate]').forEach(element => {
+        const key = element.getAttribute('data-translate');
+        if (translations[currentLanguage] && translations[currentLanguage][key]) {
+            element.textContent = translations[currentLanguage][key];
+        }
     });
-});
+}
 
-// --- Firebase Authentication Listeners ---
+// --- Authentication Functions ---
 
-// Firebase Auth State Listener
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        console.log("User is logged in:", user.uid);
-        // Determine user role and name based on login
-        // For new registrations, we default to 'customer' unless explicitly changed
-        let storedRole = localStorage.getItem('currentUserRole');
-        let storedName = localStorage.getItem('currentUserName');
-
-        if (storedRole) {
-            currentUserRole = storedRole;
-        } else {
-            // Default to customer if not explicitly set after initial login
-            currentUserRole = 'customer';
-            localStorage.setItem('currentUserRole', currentUserRole);
-        }
-
-        if (storedName) {
-            currentUserName = storedName;
-        } else {
-            // Use display name or email part as fallback
-            currentUserName = user.displayName || user.email.split('@')[0];
-            localStorage.setItem('currentUserName', currentUserName);
-        }
-
-        // Update profile data on first login/registration if empty
-        if (!userProfile.name && currentUserRole === 'customer') {
-            userProfile.name = currentUserName;
-            userProfile.email = user.email;
-            saveProfileData();
-        }
-
-        showScreen('app-container');
-        if (currentUserRole === 'serviceCenter') {
-            showContentSection('service-center-dashboard');
-            renderServiceRequests();
-            renderFeedbacks();
-            renderPaymentHistory();
-        } else {
-            showContentSection('home-section');
-        }
-        setupFirebaseChatListener(); // Setup chat listener on successful login
-    } else {
-        console.log("User is logged out.");
-        showScreen('language-selection-screen'); // Go back to language selection or auth
-        currentUserRole = null;
-        currentUserName = "Guest";
-        localStorage.removeItem('currentUserRole');
-        localStorage.removeItem('currentUserName');
-    }
-});
-
-
-// Customer Login
-const customerLoginForm = document.getElementById("customerLoginForm");
-customerLoginForm.addEventListener('submit', async (e) => {
+/**
+ * Handles user login with email and password.
+ */
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('customerLoginEmail').value;
     const password = document.getElementById('customerLoginPassword').value;
 
-    console.log(`Attempting customer login with email: ${email}`);
-
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log("Firebase Email/Password login successful:", userCredential.user);
-        currentUserRole = 'customer'; // Explicitly set role for this login type
-        currentUserName = userCredential.user.displayName || userCredential.user.email.split('@')[0];
-        localStorage.setItem('currentUserRole', currentUserRole);
-        localStorage.setItem('currentUserName', currentUserName);
-
-        displayMessage("Customer login successful!", "success");
-        // onAuthStateChanged will handle screen navigation
+        await signInWithEmailAndPassword(auth, email, password);
+        displayMessage("Logged in successfully!", "success");
+        // onAuthStateChanged will handle showing app-container
     } catch (error) {
-        console.error("Firebase Email/Password login failed:", error);
+        console.error("Login Error:", error.code, error.message);
         displayMessage(`Login failed: ${error.message}`, "error");
     }
 });
 
-// Customer Register
-const customerRegisterForm = document.getElementById("customerRegisterForm");
-customerRegisterForm.addEventListener('submit', async (e) => {
+/**
+ * Handles new user registration with email and password.
+ */
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('customerRegisterName').value;
     const email = document.getElementById('customerRegisterEmail').value;
     const password = document.getElementById('customerRegisterPassword').value;
 
-    console.log(`Attempting customer registration for email: ${email}`);
-
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await userCredential.user.updateProfile({ displayName: name });
-        console.log("Firebase Email/Password registration successful:", userCredential.user);
+        const user = userCredential.user;
 
-        // Optionally, log them in directly after registration
-        currentUserRole = 'customer';
-        currentUserName = name;
-        localStorage.setItem('currentUserRole', currentUserRole);
-        localStorage.setItem('currentUserName', currentUserName);
+        // Save user's name and role to Realtime Database
+        await set(ref(db, `users/${user.uid}/profile`), {
+            name: name,
+            email: email, // Store email in profile as well
+            role: 'customer' // Default role for new registrations
+        });
+        await set(ref(db, `users/${user.uid}/role`), 'customer'); // Separate role for easy lookup
 
-        displayMessage(`Registration successful! Logging you in...`, "success");
-        // onAuthStateChanged will handle screen navigation
+        displayMessage("Registration successful! Welcome!", "success");
+        // onAuthStateChanged will handle showing app-container
     } catch (error) {
-        console.error("Firebase Email/Password registration failed:", error);
+        console.error("Registration Error:", error.code, error.message);
         displayMessage(`Registration failed: ${error.message}`, "error");
     }
 });
 
-// Service Center Login
+/**
+ * Handles Service Center login.
+ */
 document.getElementById('serviceCenterLoginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('centerLoginEmail').value;
     const password = document.getElementById('centerLoginPassword').value;
 
-    console.log(`Attempting service center login with email: ${email}`);
-
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log("Firebase Email/Password service center login successful:", userCredential.user);
-        currentUserRole = 'serviceCenter'; // Explicitly set role for service center
-        currentUserName = "Service Center"; // Fixed name for service center
-        localStorage.setItem('currentUserRole', currentUserRole);
-        localStorage.setItem('currentUserName', currentUserName);
+        const user = userCredential.user;
 
-        displayMessage("Service Center login successful!", "success");
-        // onAuthStateChanged will handle screen navigation
+        // Verify if this user has the 'serviceCenter' role
+        onValue(ref(db, `users/${user.uid}/role`), (snapshot) => {
+            const role = snapshot.val();
+            if (role === 'serviceCenter') {
+                displayMessage("Service Center logged in successfully!", "success");
+                // onAuthStateChanged will handle showing app-container
+            } else {
+                signOut(auth); // Log them out if not a service center
+                displayMessage("Access denied. Not a Service Center account.", "error");
+            }
+        }, {
+            onlyOnce: true
+        });
+
     } catch (error) {
-        console.error("Firebase Email/Password service center login failed:", error);
+        console.error("Service Center Login Error:", error.code, error.message);
         displayMessage(`Login failed: ${error.message}`, "error");
     }
 });
 
-// Google Sign-In
-const googleBtn = document.getElementById("googleSignInBtn");
-if (googleBtn) { // Ensure button exists before adding listener
-    googleBtn.addEventListener("click", async () => {
-        try {
-            const result = await signInWithPopup(auth, googleProvider);
-            const user = result.user;
-            console.log("Google sign-in success", user);
-            currentUserRole = 'customer'; // Google sign-in typically for customers
-            currentUserName = user.displayName || user.email.split('@')[0];
-            localStorage.setItem('currentUserRole', currentUserRole);
-            localStorage.setItem('currentUserName', currentUserName);
 
-            displayMessage("Google Sign-In successful!", "success");
-            // onAuthStateChanged will handle screen navigation
-        } catch (err) {
-            console.error("Google sign-in failed", err);
-            displayMessage(`Google Sign-In failed: ${err.message}`, "error");
-        }
-    });
-} else {
-    console.warn("Google Sign-In button with ID 'googleSignInBtn' not found. Google Sign-In will not be active.");
-}
-
-
-// Forgot Password
-window.forgotPassword = async function(userType) {
-    let emailInputId;
-    if (userType === 'customer') {
-        emailInputId = 'customerLoginEmail';
-    } else if (userType === 'serviceCenter') {
-        emailInputId = 'centerLoginEmail';
-    } else {
-        console.error("Invalid user type for forgotPassword.");
-        return;
-    }
-
+/**
+ * Initiates password reset for a given user type.
+ * @param {'customer'|'serviceCenter'} userType
+ */
+window.forgotPassword = async (userType) => {
+    let emailInputId = userType === 'customer' ? 'customerLoginEmail' : 'centerLoginEmail';
     const email = document.getElementById(emailInputId).value;
+
     if (!email) {
-        displayMessage("Please enter your email address to reset password.", "warning");
+        displayMessage("Please enter your email address to reset password.", "info");
         return;
     }
 
     try {
         await sendPasswordResetEmail(auth, email);
-        displayMessage(`Password reset email sent to ${email}. Please check your inbox.`, "success");
+        displayMessage(`Password reset email sent to ${email}. Check your inbox.`, "success");
     } catch (error) {
-        console.error("Password reset failed:", error);
-        displayMessage(`Password reset failed: ${error.message}`, "error");
+        console.error("Password Reset Error:", error.code, error.message);
+        displayMessage(`Failed to send password reset email: ${error.message}`, "error");
     }
 };
 
-// Logout
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-    console.log("Logout button clicked.");
+/**
+ * Handles Google Sign-In.
+ */
+document.getElementById('googleSignInBtn').addEventListener('click', async () => {
+    const provider = new GoogleAuthProvider();
     try {
-        await signOut(auth);
-        console.log("Firebase signOut successful.");
-        displayMessage("Logged out successfully!", "info");
-        // onAuthStateChanged will handle clearing localStorage and screen navigation
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        // Check if user already exists in your 'users' node
+        const userRef = ref(db, `users/${user.uid}/role`);
+        onValue(userRef, async (snapshot) => {
+            if (!snapshot.exists()) {
+                // New user via Google, set default role as customer
+                await set(ref(db, `users/${user.uid}/profile`), {
+                    name: user.displayName || 'Google User',
+                    email: user.email,
+                    role: 'customer'
+                });
+                await set(userRef, 'customer'); // Set role
+                displayMessage("Signed in with Google. Welcome!", "success");
+            } else {
+                displayMessage("Signed in with Google successfully!", "success");
+            }
+        }, {
+            onlyOnce: true
+        });
+
     } catch (error) {
-        console.error("Firebase signOut failed:", error);
-        displayMessage(`Logout failed: ${error.message}`, "error");
+        console.error("Google Sign-In Error:", error.code, error.message);
+        displayMessage(`Google Sign-In failed: ${error.message}`, "error");
     }
 });
 
+/**
+ * Handles user logout.
+ */
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+    try {
+        await signOut(auth);
+        displayMessage("Logged out successfully!", "info");
+        // onAuthStateChanged will handle showing the language selection screen
+    } catch (error) {
+        console.error("Logout Error:", error.message);
+        displayMessage("Failed to log out.", "error");
+    }
+});
 
-// --- Main App Logic (Remaining from previous version) ---
+/**
+ * Updates navbar visibility based on user role.
+ * @param {string|null} role - 'customer', 'serviceCenter', or null.
+ */
+function updateNavBasedOnRole(role) {
+    const customerNavItems = document.querySelectorAll('.customer-nav-item');
+    const serviceCenterNavItems = document.querySelectorAll('.service-center-nav-item');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-// Book Service Form Submission
+    if (role === 'customer') {
+        customerNavItems.forEach(item => item.style.display = 'list-item');
+        serviceCenterNavItems.forEach(item => item.style.display = 'none');
+        logoutBtn.style.display = 'block';
+    } else if (role === 'serviceCenter') {
+        customerNavItems.forEach(item => item.style.display = 'none');
+        serviceCenterNavItems.forEach(item => item.style.display = 'list-item');
+        logoutBtn.style.display = 'block';
+    } else {
+        // No role or logged out
+        customerNavItems.forEach(item => item.style.display = 'none');
+        serviceCenterNavItems.forEach(item => item.style.display = 'none';
+        logoutBtn.style.display = 'none';
+    }
+}
+
+// --- Firebase Data Interaction (CRUD) Examples ---
+
+// --- Service Booking Form (Customer) ---
 document.getElementById('serviceBookingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const serviceId = generateServiceId();
     const customerName = document.getElementById('customerName').value;
     const customerContact = document.getElementById('customerContact').value;
     const customerAddress = document.getElementById('customerAddress').value;
     const carModel = document.getElementById('carModel').value;
-    let serviceType = document.getElementById('serviceType').value;
+    const serviceType = document.getElementById('serviceType').value;
+    const otherServiceType = document.getElementById('otherServiceType').value;
     const preferredDate = document.getElementById('preferredDate').value;
     const preferredTime = document.getElementById('preferredTime').value;
 
-    if (serviceType === 'Other') {
-        serviceType = document.getElementById('otherServiceType').value || 'Other (unspecified)';
+    const user = auth.currentUser;
+
+    if (!user) {
+        displayMessage("Please log in to book a service.", "error");
+        return;
     }
 
-    const newServiceRequest = {
-        serviceId: serviceId,
+    const finalServiceType = (serviceType === 'Other' ? otherServiceType : serviceType);
+    if (serviceType === 'Other' && !otherServiceType) {
+        displayMessage("Please specify the 'Other' service type.", "info");
+        return;
+    }
+
+    const serviceRequestData = {
+        userId: user.uid,
         customerName: customerName,
         customerContact: customerContact,
         customerAddress: customerAddress,
         carModel: carModel,
-        serviceType: serviceType,
+        serviceType: finalServiceType,
         preferredDate: preferredDate,
         preferredTime: preferredTime,
         status: 'Pending', // Initial status
-        timestamp: new Date().toISOString()
+        timestamp: Date.now()
     };
 
-    console.log("New service request:", newServiceRequest);
-
     try {
-        const serviceRequestsRef = ref(database, 'serviceRequests');
-        await push(serviceRequestsRef, newServiceRequest);
-        displayMessage("Service booked successfully! We will contact you soon.", "success");
-        e.target.reset(); // Clear form
-        document.getElementById('otherServiceTypeGroup').style.display = 'none'; // Hide "Other" field
-        // Optionally store for payments/feedback immediate access
-        lastServiceId = serviceId;
-        lastCustomerName = customerName;
-        lastServiceType = serviceType;
-        lastServiceAmount = 1500 + Math.floor(Math.random() * 2000); // Demo amount
-
-        // Update payment and feedback sections with latest service ID
-        document.getElementById('paymentServiceId').textContent = lastServiceId;
-        document.getElementById('paymentCustomerName').textContent = lastCustomerName;
-        document.getElementById('paymentServiceType').textContent = lastServiceType;
-        document.getElementById('paymentAmountDue').textContent = `₹${lastServiceAmount.toFixed(2)}`;
-        document.getElementById('serviceIdFeedback').value = lastServiceId;
-
+        const newRequestRef = push(ref(db, 'serviceRequests'));
+        await set(newRequestRef, serviceRequestData);
+        displayMessage(translations[currentLanguage].service_request_success, "success");
+        document.getElementById('serviceBookingForm').reset();
+        document.getElementById('otherServiceTypeGroup').style.display = 'none';
     } catch (error) {
-        console.error("Error pushing service request to Firebase:", error);
-        displayMessage("Failed to book service. Please try again.", "error");
+        console.error("Error submitting service request:", error);
+        displayMessage("Failed to submit service request: " + error.message, "error");
     }
 });
 
-
-// Toggle "Other Service Type" field
-document.getElementById('serviceType').addEventListener('change', (e) => {
-    if (e.target.value === 'Other') {
-        document.getElementById('otherServiceTypeGroup').style.display = 'block';
-        document.getElementById('otherServiceType').setAttribute('required', 'required');
+// Logic for "Other" service type visibility
+document.getElementById('serviceType').addEventListener('change', (event) => {
+    const otherServiceTypeGroup = document.getElementById('otherServiceTypeGroup');
+    if (event.target.value === 'Other') {
+        otherServiceTypeGroup.style.display = 'block';
+        document.getElementById('otherServiceType').setAttribute('required', 'true');
     } else {
-        document.getElementById('otherServiceTypeGroup').style.display = 'none';
+        otherServiceTypeGroup.style.display = 'none';
         document.getElementById('otherServiceType').removeAttribute('required');
     }
 });
 
-// Payments Section
-function togglePaymentFields() {
-    const paymentMethod = document.getElementById('paymentMethod').value;
-    const onlinePaymentFields = document.getElementById('onlinePaymentFields');
-    if (paymentMethod === 'online') {
-        onlinePaymentFields.style.display = 'block';
+
+// --- Profile Management (Customer) ---
+function loadUserProfile() {
+    const user = auth.currentUser;
+    if (user) {
+        const userProfileRef = ref(db, `users/${user.uid}/profile`);
+
+        onValue(userProfileRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const profileData = snapshot.val();
+                document.getElementById('profileName').value = profileData.name || '';
+                document.getElementById('profileEmail').value = user.email || '';
+                document.getElementById('profileMobile').value = profileData.mobile || '';
+                document.getElementById('profileAddress').value = profileData.address || '';
+                document.getElementById('profileCarMake').value = profileData.carMake || '';
+                document.getElementById('profileCarModel').value = profileData.carModel || '';
+                document.getElementById('profileCarYear').value = profileData.carYear || '';
+                document.getElementById('profileLicensePlate').value = profileData.licensePlate || '';
+            } else {
+                document.getElementById('profileEmail').value = user.email || '';
+            }
+        }, {
+            onlyOnce: true
+        }); // Load once on section open
     } else {
-        onlinePaymentFields.style.display = 'none';
+        displayMessage("Please log in to view your profile.", "info");
     }
 }
 
-document.getElementById('paymentMethod').addEventListener('change', togglePaymentFields); // Add listener for payment method change
-
-document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const paymentMethod = document.getElementById('paymentMethod').value;
-
-    if (!lastServiceId) {
-        displayMessage("Please book a service first to make a payment.", "warning");
-        return;
-    }
-
-    let paymentDetails = {
-        serviceId: lastServiceId,
-        customerName: lastCustomerName,
-        serviceType: lastServiceType,
-        amount: lastServiceAmount,
-        method: paymentMethod,
-        date: new Date().toLocaleDateString(),
-        status: 'Completed'
-    };
-
-    if (paymentMethod === 'online') {
-        const mobile = document.getElementById('customerMobileNumber').value;
-        const upi = document.getElementById('customerUpiId').value;
-        if (!mobile && !upi) {
-            displayMessage("Please enter either Mobile Number or UPI ID for online payment.", "warning");
-            return;
+    const user = auth.currentUser;
+    if (user) {
+        const profileData = {
+            name: document.getElementById('profileName').value,
+            mobile: document.getElementById('profileMobile').value,
+            address: document.getElementById('profileAddress').value,
+            carMake: document.getElementById('profileCarMake').value,
+            carModel: document.getElementById('profileCarModel').value,
+            carYear: parseInt(document.getElementById('profileCarYear').value) || null,
+            licensePlate: document.getElementById('profileLicensePlate').value,
+            email: user.email
+        };
+        try {
+            await set(ref(db, `users/${user.uid}/profile`), profileData);
+            displayMessage(translations[currentLanguage].profile_updated, "success");
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            displayMessage(`Failed to update profile: ${error.message}`, "error");
         }
-        paymentDetails.mobile = mobile;
-        paymentDetails.upi = upi;
-    }
-
-    try {
-        const paymentsRef = ref(database, 'payments');
-        await push(paymentsRef, paymentDetails);
-        displayMessage("Payment successful! Thank you.", "success");
-        document.getElementById('paymentForm').reset();
-        document.getElementById('onlinePaymentFields').style.display = 'none';
-        // Clear payment summary after successful payment
-        document.getElementById('paymentServiceId').textContent = 'N/A';
-        document.getElementById('paymentCustomerName').textContent = 'N/A';
-        document.getElementById('paymentServiceType').textContent = 'N/A';
-        document.getElementById('paymentAmountDue').textContent = '₹0.00';
-        lastServiceId = null; // Clear this so new service needs to be booked
-        lastServiceAmount = null;
-
-        // Add to local history for service center dashboard (if logged in as center)
-        // For a full app, serviceCenterFeedbacks/Payments should be loaded from Firebase directly.
-        // This is a simplified demo representation.
-        if (currentUserRole === 'serviceCenter') {
-             serviceCenterPayments.push(paymentDetails);
-             renderPaymentHistory();
-        }
-
-    } catch (error) {
-        console.error("Error processing payment:", error);
-        displayMessage("Payment failed. Please try again.", "error");
+    } else {
+        displayMessage("You must be logged in to update your profile.", "error");
     }
 });
 
 
-// Feedback Section
-document.getElementById('starRating').addEventListener('click', (e) => {
-    if (e.target.classList.contains('fa-star')) {
-        const rating = parseInt(e.target.dataset.rating);
-        customerSelectedRating = rating;
-        document.querySelectorAll('#starRating .fa-star').forEach((star, index) => {
+// --- Service Center Dashboard Data Display ---
+function renderServiceRequests() {
+    const serviceRequestsList = document.getElementById('serviceRequestsList');
+    const noRequestsMessage = document.getElementById('noRequestsMessage');
+
+    const requestsRef = ref(db, 'serviceRequests');
+
+    onValue(requestsRef, (snapshot) => {
+        serviceRequestsList.innerHTML = ''; // Clear current list
+        let hasRequests = false;
+
+        if (snapshot.exists()) {
+            // Sort requests by timestamp, newest first
+            const sortedRequests = [];
+            snapshot.forEach((childSnapshot) => {
+                sortedRequests.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            sortedRequests.sort((a, b) => b.timestamp - a.timestamp); // Newest first
+
+            sortedRequests.forEach((request) => {
+                hasRequests = true;
+                const listItem = document.createElement('li');
+                listItem.className = `request-item status-${request.status.toLowerCase()}`;
+                listItem.innerHTML = `
+                    <p class="request-details"><strong>ID:</strong> #${request.id}</p>
+                    <p class="request-details"><strong>Customer:</strong> ${request.customerName || 'N/A'}</p>
+                    <p class="request-details"><strong>Contact:</strong> ${request.customerContact || 'N/A'}</p>
+                    <p class="request-details"><strong>Address:</strong> ${request.customerAddress || 'N/A'}</p>
+                    <p class="request-details"><strong>Car:</strong> ${request.carModel || 'N/A'}</p>
+                    <p class="request-details"><strong>Service:</strong> ${request.serviceType || 'N/A'}</p>
+                    <p class="request-details"><strong>Date:</strong> ${request.preferredDate || 'N/A'} @ ${request.preferredTime || 'N/A'}</p>
+                    <p class="request-status"><strong>Status:</strong> <span class="status-text status-${request.status.toLowerCase()}">${request.status || 'Pending'}</span></p>
+                    <div class="request-actions">
+                        ${request.status === 'Pending' ? `
+                            <button class="btn btn-small" onclick="updateServiceStatus('${request.id}', 'Accepted')">Accept</button>
+                            <button class="btn btn-small btn-danger" onclick="updateServiceStatus('${request.id}', 'Rejected')">Reject</button>
+                        ` : ''}
+                        ${request.status === 'Accepted' ? `
+                            <button class="btn btn-small btn-secondary" onclick="markServiceCompleted('${request.id}')">Mark as Completed</button>
+                        ` : ''}
+                    </div>
+                `;
+                serviceRequestsList.appendChild(listItem);
+            });
+        }
+
+        if (!hasRequests) {
+            serviceRequestsList.appendChild(noRequestsMessage);
+            noRequestsMessage.style.display = 'block';
+        } else {
+            noRequestsMessage.style.display = 'none';
+        }
+    }, (error) => {
+        console.error("Error fetching service requests:", error);
+        displayMessage("Error loading service requests.", "error");
+    });
+}
+
+// Global functions for service request actions
+window.updateServiceStatus = async (requestId, newStatus) => {
+    try {
+        await update(ref(db, `serviceRequests/${requestId}`), { status: newStatus });
+        displayMessage(`Request #${requestId} status updated to ${newStatus}.`, "success");
+    } catch (error) {
+        console.error("Error updating service status:", error);
+        displayMessage(`Failed to update request status: ${error.message}`, "error");
+    }
+};
+
+window.markServiceCompleted = async (requestId) => {
+    try {
+        await update(ref(db, `serviceRequests/${requestId}`), { status: 'Completed' });
+        displayMessage(`Service #${requestId} marked as completed.`, "success");
+    } catch (error) {
+        console.error("Error marking service completed:", error);
+        displayMessage(`Failed to mark service completed: ${error.message}`, "error");
+    }
+};
+
+
+function renderCustomerFeedbackDashboard() {
+    const feedbackList = document.getElementById('customerFeedbackListDashboard');
+    const noFeedbackMessage = document.getElementById('noFeedbackMessageDashboard');
+
+    const feedbackRef = ref(db, 'feedback'); // Assuming feedback is stored here
+
+    onValue(feedbackRef, (snapshot) => {
+        feedbackList.innerHTML = '';
+        let hasFeedback = false;
+
+        if (snapshot.exists()) {
+            const sortedFeedback = [];
+            snapshot.forEach((childSnapshot) => {
+                sortedFeedback.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            sortedFeedback.sort((a, b) => b.timestamp - a.timestamp); // Newest first
+
+            sortedFeedback.forEach((feedbackItem) => {
+                hasFeedback = true;
+                const listItem = document.createElement('li');
+                const stars = '★'.repeat(feedbackItem.rating || 0) + '☆'.repeat(5 - (feedbackItem.rating || 0));
+                listItem.innerHTML = `
+                    <p class="feedback-item-text"><strong>Service ID:</strong> ${feedbackItem.serviceId || 'N/A'}</p>
+                    <p class="feedback-item-text rating-display">${stars}</p>
+                    <p class="feedback-item-text comment">"${feedbackItem.message || 'No comment provided.'}"</p>
+                    <p class="feedback-item-text meta-info">By ${feedbackItem.userName || 'Anonymous'} on ${new Date(feedbackItem.timestamp).toLocaleDateString()}</p>
+                `;
+                feedbackList.appendChild(listItem);
+            });
+        }
+
+        if (!hasFeedback) {
+            feedbackList.appendChild(noFeedbackMessage);
+            noFeedbackMessage.style.display = 'block';
+        } else {
+            noFeedbackMessage.style.display = 'none';
+        }
+    });
+}
+
+function renderPaymentHistory() {
+    const paymentHistoryList = document.getElementById('paymentHistoryList');
+    const noPaymentHistoryMessage = document.getElementById('noPaymentHistoryMessage');
+
+    const paymentsRef = ref(db, 'payments'); // Assuming payments are stored here
+
+    onValue(paymentsRef, (snapshot) => {
+        paymentHistoryList.innerHTML = '';
+        let hasPayments = false;
+
+        if (snapshot.exists()) {
+            const sortedPayments = [];
+            snapshot.forEach((childSnapshot) => {
+                sortedPayments.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            sortedPayments.sort((a, b) => b.timestamp - a.timestamp); // Newest first
+
+            sortedPayments.forEach((payment) => {
+                hasPayments = true;
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <p class="payment-details"><strong>Service ID:</strong> ${payment.serviceId || 'N/A'}</p>
+                    <p class="payment-details"><strong>Amount:</strong> ₹${payment.amount || '0.00'}</p>
+                    <p class="payment-details"><strong>Method:</strong> ${payment.method || 'N/A'}</p>
+                    <p class="payment-details"><strong>Date:</strong> ${new Date(payment.timestamp).toLocaleString()}</p>
+                    <p class="payment-details"><strong>Status:</strong> ${payment.status || 'Completed'}</p>
+                `;
+                paymentHistoryList.appendChild(listItem);
+            });
+        }
+
+        if (!hasPayments) {
+            paymentHistoryList.appendChild(noPaymentHistoryMessage);
+            noPaymentHistoryMessage.style.display = 'block';
+        } else {
+            noPaymentHistoryMessage.style.display = 'none';
+        }
+    });
+}
+
+// --- Customer Chat Functionality ---
+function renderChatMessages(userId) {
+    const chatMessagesContainer = document.getElementById('chatMessages');
+    const chatRef = ref(db, `chats/${userId}`); // Chat specific to the current user
+
+    // Clear initial static messages when dynamic content loads
+    chatMessagesContainer.innerHTML = '';
+
+    onValue(chatRef, (snapshot) => {
+        chatMessagesContainer.innerHTML = ''; // Clear existing messages to prevent duplicates on update
+        if (snapshot.exists()) {
+            const messages = [];
+            snapshot.forEach((childSnapshot) => {
+                messages.push(childSnapshot.val());
+            });
+
+            // Sort messages by timestamp
+            messages.sort((a, b) => a.timestamp - b.timestamp);
+
+            messages.forEach((messageData) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                // Assume 'customer' sends, 'serviceCenter' receives in this chat
+                messageDiv.classList.add(messageData.sender === 'customer' ? 'sent' : 'received');
+
+                const messageTime = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                messageDiv.innerHTML = `
+                    <p><strong>${messageData.sender === 'customer' ? 'You' : 'Service Center'}:</strong> ${messageData.text}</p>
+                    <span class="timestamp">${messageTime}</span>
+                `;
+                chatMessagesContainer.appendChild(messageDiv);
+            });
+            // Scroll to the bottom of the chat after messages are loaded/updated
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        } else {
+            chatMessagesContainer.innerHTML = '<div class="message received"><p><strong>Service Center:</strong> Welcome to chat! How can we assist you?</p><span class="timestamp">' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</span></div>';
+        }
+    }, (error) => {
+        console.error("Error fetching chat messages:", error);
+        displayMessage("Error loading chat.", "error");
+    });
+}
+
+document.getElementById('chatSendBtn').addEventListener('click', async () => {
+    const chatInput = document.getElementById('chatInput');
+    const messageText = chatInput.value.trim();
+    const user = auth.currentUser;
+
+    if (!user) {
+        displayMessage("Please log in to send messages.", "error");
+        return;
+    }
+
+    if (messageText) {
+        // Determine sender based on the globally tracked role
+        const sender = (currentUserRole === 'customer') ? 'customer' : 'serviceCenter'; // Or more robustly check from user's DB profile
+
+        try {
+            const newMessageRef = push(ref(db, `chats/${user.uid}`)); // Chat specific to this user's UID
+            await set(newMessageRef, {
+                text: messageText,
+                sender: sender,
+                timestamp: Date.now()
+            });
+            chatInput.value = ''; // Clear input
+        } catch (error) {
+            console.error("Error sending message:", error);
+            displayMessage("Failed to send message.", "error");
+        }
+    }
+});
+
+
+// --- Payments Section Functionality (Example - needs integration with service booking/completion) ---
+// This part is more conceptual. In a real app, payment details would be pulled
+// from a specific service request that is due for payment.
+document.getElementById('paymentMethod').addEventListener('change', (event) => {
+    const onlinePaymentFields = document.getElementById('onlinePaymentFields');
+    if (event.target.value === 'online') {
+        onlinePaymentFields.style.display = 'block';
+        document.getElementById('customerMobileNumber').setAttribute('required', 'true');
+    } else {
+        onlinePaymentFields.style.display = 'none';
+        document.getElementById('customerMobileNumber').removeAttribute('required');
+    }
+});
+
+document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) {
+        displayMessage("Please log in to make a payment.", "error");
+        return;
+    }
+
+    // In a real scenario, you'd get the actual serviceId and amount
+    // from a pending service request tied to the current user.
+    const mockServiceId = "SVC" + Math.floor(Math.random() * 100000);
+    const mockAmount = "1500.00"; // Example amount
+
+    const paymentData = {
+        userId: user.uid,
+        serviceId: mockServiceId, // Placeholder
+        amount: mockAmount,       // Placeholder
+        method: document.getElementById('paymentMethod').value,
+        status: 'Completed',      // Assume completed on form submission
+        timestamp: Date.now()
+    };
+
+    if (paymentData.method === 'online') {
+        paymentData.mobileNumber = document.getElementById('customerMobileNumber').value;
+        paymentData.upiId = document.getElementById('customerUpiId').value;
+        if (!paymentData.mobileNumber) {
+            displayMessage("Mobile number is required for online payment.", "info");
+            return;
+        }
+    }
+
+    try {
+        await push(ref(db, 'payments'), paymentData);
+        displayMessage(translations[currentLanguage].payment_success, "success");
+        document.getElementById('paymentForm').reset();
+        document.getElementById('onlinePaymentFields').style.display = 'none';
+        // Clear payment summary (if it was dynamically populated)
+        document.getElementById('paymentServiceId').textContent = 'N/A';
+        document.getElementById('paymentCustomerName').textContent = 'N/A';
+        document.getElementById('paymentServiceType').textContent = 'N/A';
+        document.getElementById('paymentAmountDue').textContent = '₹0.00';
+    } catch (error) {
+        console.error("Error processing payment:", error);
+        displayMessage(`Failed to process payment: ${error.message}`, "error");
+    }
+});
+
+
+// --- Feedback Section Functionality ---
+let selectedRating = 0; // To store the selected star rating
+
+document.getElementById('starRating').addEventListener('click', (event) => {
+    if (event.target.tagName === 'I') {
+        const rating = parseInt(event.target.dataset.rating);
+        selectedRating = rating;
+        const stars = document.querySelectorAll('#starRating i');
+        stars.forEach((star, index) => {
             if (index < rating) {
-                star.classList.add('fas');
                 star.classList.remove('far');
+                star.classList.add('fas'); // Filled star
             } else {
-                star.classList.add('far');
                 star.classList.remove('fas');
+                star.classList.add('far'); // Empty star
             }
         });
     }
@@ -685,344 +840,177 @@ document.getElementById('starRating').addEventListener('click', (e) => {
 
 document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    const serviceId = document.getElementById('serviceIdFeedback').value;
-    const feedbackMessage = document.getElementById('feedbackMessage').value;
-
-    if (!serviceId) {
-        displayMessage("Please ensure a Service ID is pre-filled from a booking.", "warning");
+    const user = auth.currentUser;
+    if (!user) {
+        displayMessage("Please log in to submit feedback.", "error");
         return;
     }
-    if (customerSelectedRating === 0) {
-        displayMessage("Please select a star rating.", "warning");
+
+    const serviceId = document.getElementById('serviceIdFeedback').value || "AutoGeneratedSVC" + Math.floor(Math.random() * 10000); // Placeholder
+    const feedbackMessage = document.getElementById('feedbackMessage').value;
+
+    if (selectedRating === 0) {
+        displayMessage("Please select a star rating.", "info");
         return;
     }
     if (!feedbackMessage.trim()) {
-        displayMessage("Please enter your feedback message.", "warning");
+        displayMessage("Please provide your comments.", "info");
         return;
     }
 
-    const newFeedback = {
+    const feedbackData = {
+        userId: user.uid,
+        userName: user.displayName || user.email || 'Anonymous',
         serviceId: serviceId,
-        rating: customerSelectedRating,
+        rating: selectedRating,
         message: feedbackMessage,
-        timestamp: new Date().toISOString()
+        timestamp: Date.now()
     };
 
     try {
-        const feedbacksRef = ref(database, 'feedbacks');
-        await push(feedbacksRef, newFeedback);
-        displayMessage("Feedback submitted successfully! Thank you for your input.", "success");
-        e.target.reset();
-        customerSelectedRating = 0; // Reset stars
-        document.querySelectorAll('#starRating .fa-star').forEach(star => {
+        await push(ref(db, 'feedback'), feedbackData);
+        displayMessage(translations[currentLanguage].feedback_thank_you, "success");
+        document.getElementById('feedbackForm').reset();
+        selectedRating = 0; // Reset stars
+        document.querySelectorAll('#starRating i').forEach(star => {
             star.classList.remove('fas');
             star.classList.add('far');
         });
-        document.getElementById('serviceIdFeedback').value = ''; // Clear ID after submission
-
-        if (currentUserRole === 'serviceCenter') {
-            serviceCenterFeedbacks.push(newFeedback);
-            renderFeedbacks();
-        }
-
     } catch (error) {
         console.error("Error submitting feedback:", error);
-        displayMessage("Failed to submit feedback. Please try again.", "error");
+        displayMessage(`Failed to submit feedback: ${error.message}`, "error");
     }
 });
 
+// Function to render customer feedback on the customer's own feedback section
+function renderCustomerFeedbackList() {
+    const customerFeedbackList = document.getElementById('customerFeedbackList');
+    const noFeedbackMessage = document.getElementById('noFeedbackMessage');
+    const user = auth.currentUser;
 
-// Contact Us Section
+    if (!user) {
+        customerFeedbackList.innerHTML = `<li class="empty-message">${translations[currentLanguage].no_feedback_yet || 'No feedback submitted yet.'}</li>`;
+        return;
+    }
+
+    const feedbackRef = ref(db, 'feedback');
+
+    onValue(feedbackRef, (snapshot) => {
+        customerFeedbackList.innerHTML = '';
+        let hasUserFeedback = false;
+
+        if (snapshot.exists()) {
+            const userFeedbacks = [];
+            snapshot.forEach((childSnapshot) => {
+                const feedbackItem = childSnapshot.val();
+                if (feedbackItem.userId === user.uid) { // Filter by current user
+                    userFeedbacks.push({ id: childSnapshot.key, ...feedbackItem });
+                }
+            });
+
+            if (userFeedbacks.length > 0) {
+                userFeedbacks.sort((a, b) => b.timestamp - a.timestamp); // Newest first
+                hasUserFeedback = true;
+
+                userFeedbacks.forEach((feedbackItem) => {
+                    const listItem = document.createElement('li');
+                    const stars = '★'.repeat(feedbackItem.rating || 0) + '☆'.repeat(5 - (feedbackItem.rating || 0));
+                    listItem.innerHTML = `
+                        <p class="rating-display">${stars}</p>
+                        <p class="comment">"${feedbackItem.message || 'No comment provided.'}"</p>
+                        <p class="meta-info">Service ID: ${feedbackItem.serviceId || 'N/A'} on ${new Date(feedbackItem.timestamp).toLocaleDateString()}</p>
+                    `;
+                    customerFeedbackList.appendChild(listItem);
+                });
+            }
+        }
+
+        if (!hasUserFeedback) {
+            customerFeedbackList.appendChild(noFeedbackMessage);
+            noFeedbackMessage.style.display = 'block';
+        } else {
+            noFeedbackMessage.style.display = 'none';
+        }
+    });
+}
+
+
+// --- Contact Us Section Functionality ---
 document.getElementById('contactForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const contactName = document.getElementById('contactName').value;
-    const contactEmail = document.getElementById('contactEmail').value;
-    const contactMessage = document.getElementById('contactMessage').value;
-
-    const newContactMessage = {
-        name: contactName,
-        email: contactEmail,
-        message: contactMessage,
-        timestamp: new Date().toISOString()
+    const contactData = {
+        name: document.getElementById('contactName').value,
+        email: document.getElementById('contactEmail').value,
+        subject: document.getElementById('contactSubject').value,
+        message: document.getElementById('contactMessage').value,
+        timestamp: Date.now()
     };
 
     try {
-        const contactsRef = ref(database, 'contactMessages');
-        await push(contactsRef, newContactMessage);
-        displayMessage("Your message has been sent successfully! We will get back to you soon.", "success");
-        e.target.reset();
+        await push(ref(db, 'contactMessages'), contactData);
+        displayMessage(translations[currentLanguage].contact_message_sent, "success");
+        document.getElementById('contactForm').reset();
     } catch (error) {
         console.error("Error sending contact message:", error);
-        displayMessage("Failed to send message. Please try again.", "error");
+        displayMessage(`Failed to send message: ${error.message}`, "error");
     }
 });
 
-// Profile Section
-document.getElementById('profileForm').addEventListener('submit', (e) => {
-    e.preventDefault();
 
-    userProfile.name = document.getElementById('profileName').value;
-    userProfile.email = document.getElementById('profileEmail').value;
-    userProfile.mobile = document.getElementById('profileMobile').value;
-    userProfile.address = document.getElementById('profileAddress').value;
-    userProfile.carMake = document.getElementById('profileCarMake').value;
-    userProfile.carModel = document.getElementById('profileCarModel').value;
-    userProfile.carYear = document.getElementById('profileCarYear').value ? parseInt(document.getElementById('profileCarYear').value) : null;
-    userProfile.licensePlate = document.getElementById('profileLicensePlate').value;
-
-    saveProfileData();
-    displayMessage("Profile updated successfully!", "success");
-});
-
-// --- Chat Functionality ---
-const chatMessagesDiv = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-const chatSendBtn = document.getElementById('chatSendBtn'); // Assuming a send button exists
-
-// Ensure send button listener is active
-if (chatSendBtn) {
-    chatSendBtn.addEventListener('click', window.sendMessage); // Use window.sendMessage as it's global
-}
-if (chatInput) {
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            window.sendMessage(); // Call the global sendMessage
-        }
-    });
-}
-
-
-window.sendMessage = function () { // Exported to be callable from HTML
-    const messageText = chatInput.value.trim();
-    if (messageText === '') return;
-
-    // Use currentUserName from state
-    const sender = currentUserName;
-    const role = currentUserRole; // Also send the role with the message
-
-    const messageData = {
-        sender: sender,
-        message: messageText,
-        timestamp: Date.now(), // Using Date.now() as requested in your snippet
-        role: role
-    };
-
-    if (auth.currentUser && database) { // Check both auth and database instances
-        try {
-            const chatRef = ref(database, 'chat');
-            push(chatRef, messageData);
-            chatInput.value = '';
-        } catch (error) {
-            console.error("Error sending chat message:", error);
-            displayMessage("Failed to send message. Please try again.", "error");
-        }
-    } else {
-        displayMessage("You must be logged in to send chat messages.", "warning");
-        console.warn("Not signed in or Firebase DB not available. Message not sent to Firebase.");
-    }
-};
-
-function setupFirebaseChatListener() {
-    if (database) {
-        const chatRef = ref(database, "chat");
-        chatMessagesDiv.innerHTML = `<div class="message received"><p>Service Center: Hello! How can we help you today?</p></div>`; // Clear and add initial message
-
-        onChildAdded(chatRef, (snapshot) => {
-            const messageData = snapshot.val();
-            const messageElement = document.createElement("div");
-            messageElement.classList.add("message");
-
-            // Determine if the message is sent by the current user or received from another party
-            if (messageData.sender === currentUserName && messageData.role === currentUserRole) {
-                messageElement.classList.add("sent");
-            } else {
-                messageElement.classList.add("received");
-            }
-
-            // Ensure sender name is shown for all messages
-            messageElement.innerHTML = `<p><strong>${messageData.sender}:</strong> ${messageData.message}</p>`;
-            chatMessagesDiv.appendChild(messageElement);
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-        });
-    } else {
-        console.warn("Firebase Database not available for chat. Chat will run in demo mode (local only if implemented).");
-    }
-}
-
-
-// --- Service Center Dashboard ---
-
-function renderServiceRequests() {
-    serviceRequestsList.innerHTML = ''; // Clear existing requests
-    if (noRequestsMessage) noRequestsMessage.style.display = 'block'; // Show initially, hide if data comes
-
-    if (database) {
-        const requestsRef = ref(database, 'serviceRequests');
-        onChildAdded(requestsRef, (snapshot) => {
-            const requestData = snapshot.val();
-            const requestKey = snapshot.key; // Get the unique key for the request
-
-            const li = document.createElement('li');
-            li.id = `request-${requestKey}`; // Assign an ID to update later
-            li.innerHTML = `
-                <p class="request-details"><strong>ID:</strong> ${requestData.serviceId}</p>
-                <p class="request-details"><strong>Customer:</strong> ${requestData.customerName}</p>
-                <p class="request-details"><strong>Car:</strong> ${requestData.carModel}</p>
-                <p class="request-details"><strong>Service:</strong> ${requestData.serviceType}</p>
-                <p class="request-details"><strong>Date/Time:</strong> ${requestData.preferredDate} at ${requestData.preferredTime}</p>
-                <p class="request-status"><strong>Status:</strong> <span id="status-${requestKey}">${requestData.status}</span></p>
-                <div class="request-actions">
-                    ${requestData.status === 'Pending' ? `
-                        <button class="btn btn-success" onclick="acceptRequest('${requestKey}', '${requestData.serviceId}')">Accept</button>
-                        <button class="btn btn-danger" onclick="rejectRequest('${requestKey}', '${requestData.serviceId}')">Reject</button>
-                    ` : ''}
-                    <button class="btn btn-secondary" onclick="viewCustomerContact('${requestData.customerName}', '${requestData.customerContact}', '${requestData.customerAddress}')">Contact</button>
-                </div>
-            `;
-            serviceRequestsList.appendChild(li);
-            updateNoRequestsMessage(); // Check after adding
-        });
-    } else {
-        // Demo data for service requests (as fallback)
-        const demoRequests = [
-            {
-                serviceId: '#SVC12345', customerName: 'Alice Smith', carModel: 'Honda City',
-                serviceType: 'Basic Service', preferredDate: '2025-07-15', preferredTime: '10:00',
-                status: 'Pending', customerContact: '9876512345', customerAddress: '123, Demo Lane'
-            },
-            {
-                serviceId: '#SVC67890', customerName: 'Bob Johnson', carModel: 'Hyundai Creta',
-                serviceType: 'Wheel Alignment', preferredDate: '2025-07-16', preferredTime: '14:30',
-                status: 'Accepted', customerContact: '9876554321', customerAddress: '456, Sample Street'
-            }
-        ];
-
-        serviceRequestsList.innerHTML = ''; // Clear to add demo data
-        demoRequests.forEach((request, index) => {
-            const li = document.createElement('li');
-            li.id = `request-demo-${index}`;
-            li.innerHTML = `
-                <p class="request-details"><strong>ID:</strong> ${request.serviceId}</p>
-                <p class="request-details"><strong>Customer:</strong> ${request.customerName}</p>
-                <p class="request-details"><strong>Car:</strong> ${request.carModel}</p>
-                <p class="request-details"><strong>Service:</strong> ${request.serviceType}</p>
-                <p class="request-details"><strong>Date/Time:</strong> ${request.preferredDate} at ${request.preferredTime}</p>
-                <p class="request-status"><strong>Status:</strong> <span id="status-demo-${index}">${request.status}</span></p>
-                <div class="request-actions">
-                    ${request.status === 'Pending' ? `
-                        <button class="btn btn-success" onclick="acceptRequest('demo-${index}', '${request.serviceId}')">Accept</button>
-                        <button class="btn btn-danger" onclick="rejectRequest('demo-${index}', '${request.serviceId}')">Reject</button>
-                    ` : ''}
-                    <button class="btn btn-secondary" onclick="viewCustomerContact('${request.customerName}', '${request.customerContact}', '${request.customerAddress}')">Contact</button>
-                </div>
-            `;
-            serviceRequestsList.appendChild(li);
-        });
-        updateNoRequestsMessage();
-        console.warn("Firebase Database not available for service requests. Showing demo data.");
-    }
-}
-
-window.acceptRequest = async function(requestKey, serviceId) {
-    if (database) {
-        try {
-            const requestRef = ref(database, `serviceRequests/${requestKey}/status`);
-            await set(requestRef, 'Accepted'); // Using set to update only the status field
-            displayMessage(`Request ${serviceId} accepted!`, "success");
-            document.getElementById(`status-${requestKey}`).textContent = 'Accepted';
-            // Remove action buttons
-            const actionsDiv = document.querySelector(`#request-${requestKey} .request-actions`);
-            if (actionsDiv) actionsDiv.innerHTML = '';
-        } catch (error) {
-            console.error("Error accepting request:", error);
-            displayMessage("Failed to accept request.", "error");
-        }
-    } else {
-        displayMessage(`Request ${serviceId} accepted (Demo Mode)!`, "success");
-        document.getElementById(`status-${requestKey}`).textContent = 'Accepted';
-        const actionsDiv = document.querySelector(`#request-${requestKey} .request-actions`);
-        if (actionsDiv) actionsDiv.innerHTML = '';
-    }
-};
-
-window.rejectRequest = async function(requestKey, serviceId) {
-    if (database) {
-        try {
-            const requestRef = ref(database, `serviceRequests/${requestKey}/status`);
-            await set(requestRef, 'Rejected'); // Using set to update only the status field
-            displayMessage(`Request ${serviceId} rejected!`, "info");
-            document.getElementById(`status-${requestKey}`).textContent = 'Rejected';
-            const actionsDiv = document.querySelector(`#request-${requestKey} .request-actions`);
-            if (actionsDiv) actionsDiv.innerHTML = '';
-        } catch (error) {
-            console.error("Error rejecting request:", error);
-            displayMessage("Failed to reject request.", "error");
-        }
-    } else {
-        displayMessage(`Request ${serviceId} rejected (Demo Mode)!`, "info");
-        document.getElementById(`status-${requestKey}`).textContent = 'Rejected';
-        const actionsDiv = document.querySelector(`#request-${requestKey} .request-actions`);
-        if (actionsDiv) actionsDiv.innerHTML = '';
-    }
-};
-
-window.viewCustomerContact = function(name, contact, address) {
-    const message = `
-        <strong>Customer Name:</strong> ${name}<br>
-        <strong>Contact No:</strong> ${contact}<br>
-        <strong>Address:</strong> ${address}
-    `;
-    displayMessage(message, "info", 5000); // Show for 5 seconds
-};
-
-window.convertCenterPoints = function() {
-    // This is a placeholder. Real points system would involve backend logic.
-    displayMessage("Loyalty points conversion is under development. Coming soon!", "info");
-};
-
-// --- Custom Message Box ---
-const customMessageBox = document.getElementById('customMessageBox');
-let messageTimeout;
-
-function displayMessage(message, type = 'info', duration = 3000) {
-    clearTimeout(messageTimeout); // Clear any existing timeout
-
-    customMessageBox.innerHTML = message; // Use innerHTML to allow for bold tags etc.
-    customMessageBox.className = 'custom-message-box show'; // Reset classes and add 'show'
-    if (type) {
-        customMessageBox.classList.add(type);
-    }
-
-    messageTimeout = setTimeout(() => {
-        customMessageBox.classList.remove('show');
-        customMessageBox.classList.remove(type); // Clean up type class
-    }, duration);
-}
-
-
-// --- DOMContentLoaded for initial setup ---
+// --- Initial Setup and Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
-    // ... your existing code
-
-    // Initialize the "Other Service Type" toggle
-    document.getElementById('serviceType').dispatchEvent(new Event('change'));
-
-    // Load profile data for customers
-    if (currentUserRole === 'customer') {
-        loadProfileData();
-    }
-
-    // ✅ 👉 Add this block BELOW profile check but ABOVE showCustomerAuth:
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href').slice(1); // remove the "#"
-            showContentSection(targetId);
+    // Language selection buttons
+    document.querySelectorAll('.lang-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            currentLanguage = event.target.dataset.lang;
+            applyTranslations(); // Apply initial translations
+            showScreen('customer-auth-screen'); // Move to auth screen after language selection
         });
     });
 
-    // Show login form by default
-    showCustomerAuth('login');
+    // Initialize display based on authentication state
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // User is signed in, fetch role
+            const userRoleRef = ref(db, `users/${user.uid}/role`);
+            onValue(userRoleRef, (snapshot) => {
+                currentUserRole = snapshot.val();
+                console.log(`User ${user.uid} is logged in with role: ${currentUserRole}`);
+                showScreen('app-container');
+                updateNavBasedOnRole(currentUserRole);
+
+                // Specific initial loads based on role/default section
+                if (currentUserRole === 'customer') {
+                    // Automatically pre-fill some fields in service booking/profile if available
+                    onValue(ref(db, `users/${user.uid}/profile`), (profileSnapshot) => {
+                        if (profileSnapshot.exists()) {
+                            const profile = profileSnapshot.val();
+                            document.getElementById('customerName').value = profile.name || '';
+                            document.getElementById('customerContact').value = profile.mobile || '';
+                            document.getElementById('customerAddress').value = profile.address || '';
+                            document.getElementById('carModel').value = profile.carModel || '';
+                            // Pre-fill feedback service ID if there's a recent service? (more complex)
+                            // For now, leave serviceIdFeedback empty for manual input or a later auto-fill mechanism
+                        }
+                    }, { onlyOnce: true });
+                    // Also load customer-specific feedback if on feedback section
+                    if (currentActiveSectionId === 'feedback-section') {
+                        renderCustomerFeedbackList();
+                    }
+                } else if (currentUserRole === 'serviceCenter') {
+                    showContentSection('service-center-dashboard'); // Redirect service center to dashboard
+                }
+            }, { onlyOnce: true }); // Fetch role once on sign-in
+        } else {
+            // User is signed out
+            currentUserRole = null;
+            showScreen('language-selection-screen'); // Go back to language/auth screen
+            updateNavBasedOnRole(null); // Hide all nav items
+            // Clear any user-specific data from UI if applicable
+        }
+    });
+
+    // Initial translation application (before user selects, it will use default 'en')
+    applyTranslations();
 });
