@@ -1,3 +1,8 @@
+I can provide the full, updated JavaScript code (`script.js`) that was previously discussed and provided. This code includes the Firebase integration for authentication, service booking, profile management, chat, payments, and feedback, along with the logic for language selection and UI management.
+
+Here is the complete `script.js` file:
+
+```javascript
 // Firebase Imports
 import {
     getAuth,
@@ -62,6 +67,7 @@ const translations = {
         service_request_success: "Service request submitted successfully!",
         payment_success: "Payment processed successfully!",
         contact_message_sent: "Your message has been sent successfully!",
+        no_feedback_yet: "No feedback submitted yet.",
         // Add more phrases as your UI expands
     },
     hi: {
@@ -96,8 +102,111 @@ const translations = {
         service_request_success: "सेवा अनुरोध सफलतापूर्वक सबमिट किया गया!",
         payment_success: "भुगतान सफलतापूर्वक संसाधित हुआ!",
         contact_message_sent: "आपका संदेश सफलतापूर्वक भेजा गया है!",
+        no_feedback_yet: "अभी तक कोई प्रतिक्रिया सबमिट नहीं की गई है।",
     },
-    // Add other languages (mr, te, kn) here
+    // Add other languages (mr, te, kn) here based on your needs
+    mr: {
+        choose_language: "आपली भाषा निवडा",
+        login: "लॉगिन करा",
+        register: "नोंदणी करा",
+        customer_login: "ग्राहक लॉगिन",
+        customer_register: "ग्राहक नोंदणी",
+        email: "ईमेल",
+        password: "पासवर्ड",
+        full_name: "पूर्ण नाव",
+        forgot_password: "पासवर्ड विसरलात?",
+        or: "किंवा",
+        sign_in_with_google: "गुगलने साइन इन करा",
+        are_you_a_service_center: "तुम्ही सेवा केंद्र आहात का?",
+        service_center_login: "सेवा केंद्र लॉगिन",
+        are_you_a_customer: "तुम्ही ग्राहक आहात का?",
+        customer_login_here: "येथे लॉगिन करा",
+        logout: "लॉगआउट",
+        nav_home: "होम",
+        nav_book_service: "सेवा बुक करा",
+        nav_payments: "देयके",
+        nav_feedback: "अभिप्राय",
+        nav_contact: "संपर्क साधा",
+        nav_profile: "प्रोफाइल",
+        nav_chat: "चॅट",
+        hero_heading: "तणावमुक्त कार सेवा अनुभवा!",
+        hero_subheading: "पिकअपपासून डिलिव्हरीपर्यंत, आम्ही कारची देखभाल सोपी आणि पारदर्शक करतो. जलद, विश्वासार्ह आणि फक्त एका टॅपवर.",
+        book_now_cta: "तुमची सेवा आता बुक करा",
+        feedback_thank_you: "आपल्या प्रतिसादाबद्दल धन्यवाद!",
+        profile_updated: "प्रोफाइल यशस्वीरित्या अद्यतनित केले!",
+        service_request_success: "सेवा विनंती यशस्वीरित्या सबमिट केली!",
+        payment_success: "भरणा यशस्वीरित्या प्रक्रिया केली!",
+        contact_message_sent: "आपला संदेश यशस्वीरित्या पाठवला गेला आहे!",
+        no_feedback_yet: "अद्याप कोणताही अभिप्राय सबमिट केलेला नाही.",
+    },
+    te: {
+        choose_language: "మీ భాషను ఎంచుకోండి",
+        login: "లాగిన్ చేయండి",
+        register: "నమోదు చేయండి",
+        customer_login: "కస్టమర్ లాగిన్",
+        customer_register: "కస్టమర్ నమోదు",
+        email: "ఇమెయిల్",
+        password: "పాస్‌వర్డ్",
+        full_name: "పూర్తి పేరు",
+        forgot_password: "పాస్‌వర్డ్ మర్చిపోయారా?",
+        or: "లేదా",
+        sign_in_with_google: "గూగుల్‌తో సైన్ ఇన్ చేయండి",
+        are_you_a_service_center: "మీరు సర్వీస్ సెంటర్వా?",
+        service_center_login: "సర్వీస్ సెంటర్ లాగిన్",
+        are_you_a_customer: "మీరు కస్టమర్వా?",
+        customer_login_here: "ఇక్కడ లాగిన్ చేయండి",
+        logout: "లాగ్ అవుట్",
+        nav_home: "హోమ్",
+        nav_book_service: "సేవను బుక్ చేయండి",
+        nav_payments: "చెల్లింపులు",
+        nav_feedback: "అభిప్రాయం",
+        nav_contact: "మమ్మల్ని సంప్రదించండి",
+        nav_profile: "ప్రొఫైల్",
+        nav_chat: "చాట్",
+        hero_heading: "ఎటువంటి ఇబ్బందులు లేని కార్ సర్వీసింగ్‌ను అనుభవించండి!",
+        hero_subheading: "పికప్ నుండి డెలివరీ వరకు, మేము కారు నిర్వహణను సులభం మరియు పారదర్శకంగా చేస్తాము. త్వరిత, నమ్మదగిన, మరియు కేవలం ఒక ట్యాప్ దూరంలో.",
+        book_now_cta: "మీ సేవను ఇప్పుడే బుక్ చేయండి",
+        feedback_thank_you: "మీ అభిప్రాయానికి ధన్యవాదాలు!",
+        profile_updated: "ప్రొఫైల్ విజయవంతంగా నవీకరించబడింది!",
+        service_request_success: "సేవా అభ్యర్థన విజయవంతంగా సమర్పించబడింది!",
+        payment_success: "చెల్లింపు విజయవంతంగా ప్రాసెస్ చేయబడింది!",
+        contact_message_sent: "మీ సందేశం విజయవంతంగా పంపబడింది!",
+        no_feedback_yet: "ఇప్పటివరకు అభిప్రాయం సమర్పించబడలేదు.",
+    },
+    kn: {
+        choose_language: "ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆರಿಸಿ",
+        login: "ಲಾಗ್ ಇನ್ ಮಾಡಿ",
+        register: "ನೋಂದಾಯಿಸಿ",
+        customer_login: "ಗ್ರಾಹಕ ಲಾಗಿನ್",
+        customer_register: "ಗ್ರಾಹಕ ನೋಂದಣಿ",
+        email: "ಇಮೇಲ್",
+        password: "ಪಾಸ್ವರ್ಡ್",
+        full_name: "ಪೂರ್ಣ ಹೆಸರು",
+        forgot_password: "ಪಾಸ್ವರ್ಡ್ ಮರೆತಿದ್ದೀರಾ?",
+        or: "ಅಥವಾ",
+        sign_in_with_google: "ಗೂಗಲ್‌ನೊಂದಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ",
+        are_you_a_service_center: "ನೀವು ಸೇವಾ ಕೇಂದ್ರವೇ?",
+        service_center_login: "ಸೇವಾ ಕೇಂದ್ರ ಲಾಗಿನ್",
+        are_you_a_customer: "ನೀವು ಗ್ರಾಹಕರೇ?",
+        customer_login_here: "ಇಲ್ಲಿ ಲಾಗಿನ್ ಮಾಡಿ",
+        logout: "ಲಾಗ್ ಔಟ್",
+        nav_home: "ಹೋಮ್",
+        nav_book_service: "ಸೇವೆ ಬುಕ್ ಮಾಡಿ",
+        nav_payments: "ಪಾವತಿಗಳು",
+        nav_feedback: "ಪ್ರತಿಕ್ರಿಯೆ",
+        nav_contact: "ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ",
+        nav_profile: "ಪ್ರೊಫೈಲ್",
+        nav_chat: "ಚಾಟ್",
+        hero_heading: "ತೊಂದರೆ-ಮುಕ್ತ ಕಾರ್ ಸೇವೆ ಅನುಭವಿಸಿ!",
+        hero_subheading: "ಪಿಕ್ಅಪ್‌ನಿಂದ ಡೆಲಿವರಿವರೆಗೆ, ನಾವು ಕಾರು ನಿರ್ವಹಣೆಯನ್ನು ಸುಲಭ ಮತ್ತು ಪಾರದರ್ಶಕಗೊಳಿಸುತ್ತೇವೆ. ತ್ವರಿತ, ವಿಶ್ವಾಸಾರ್ಹ, ಮತ್ತು ಕೇವಲ ಒಂದು ಟ್ಯಾಪ್ ದೂರದಲ್ಲಿ.",
+        book_now_cta: "ನಿಮ್ಮ ಸೇವೆಯನ್ನು ಈಗಲೇ ಬುಕ್ ಮಾಡಿ",
+        feedback_thank_you: "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಗೆ ಧನ್ಯವಾದಗಳು!",
+        profile_updated: "ಪ್ರೊಫೈಲ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ!",
+        service_request_success: "ಸೇವಾ ವಿನಂತಿ ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!",
+        payment_success: "ಪಾವತಿ ಯಶಸ್ವಿಯಾಗಿ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗಿದೆ!",
+        contact_message_sent: "ನಿಮ್ಮ ಸಂದೇಶವನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಕಳುಹಿಸಲಾಗಿದೆ!",
+        no_feedback_yet: "ಇನ್ನೂ ಯಾವುದೇ ಪ್ರತಿಕ್ರಿಯೆ ಸಲ್ಲಿಸಿಲ್ಲ.",
+    },
 };
 
 // --- UI Management Functions ---
@@ -188,6 +297,8 @@ function showContentSection(sectionId) {
             } else {
                 displayMessage("Please log in to use chat.", "info");
             }
+        } else if (sectionId === 'feedback-section') {
+            renderCustomerFeedbackList();
         }
         // ... add more conditions for other sections that need data loaded
     }
@@ -236,7 +347,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
     try {
         await signInWithEmailAndPassword(auth, email, password);
-        displayMessage("Logged in successfully!", "success");
+        displayMessage(translations[currentLanguage].login_success || "Logged in successfully!", "success");
         // onAuthStateChanged will handle showing app-container
     } catch (error) {
         console.error("Login Error:", error.code, error.message);
@@ -265,7 +376,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         });
         await set(ref(db, `users/${user.uid}/role`), 'customer'); // Separate role for easy lookup
 
-        displayMessage("Registration successful! Welcome!", "success");
+        displayMessage(translations[currentLanguage].registration_success || "Registration successful! Welcome!", "success");
         // onAuthStateChanged will handle showing app-container
     } catch (error) {
         console.error("Registration Error:", error.code, error.message);
@@ -322,7 +433,8 @@ window.forgotPassword = async (userType) => {
     try {
         await sendPasswordResetEmail(auth, email);
         displayMessage(`Password reset email sent to ${email}. Check your inbox.`, "success");
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Password Reset Error:", error.code, error.message);
         displayMessage(`Failed to send password reset email: ${error.message}`, "error");
     }
@@ -356,7 +468,8 @@ document.getElementById('googleSignInBtn').addEventListener('click', async () =>
             onlyOnce: true
         });
 
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Google Sign-In Error:", error.code, error.message);
         displayMessage(`Google Sign-In failed: ${error.message}`, "error");
     }
@@ -370,7 +483,8 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
         await signOut(auth);
         displayMessage("Logged out successfully!", "info");
         // onAuthStateChanged will handle showing the language selection screen
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Logout Error:", error.message);
         displayMessage("Failed to log out.", "error");
     }
@@ -396,7 +510,7 @@ function updateNavBasedOnRole(role) {
     } else {
         // No role or logged out
         customerNavItems.forEach(item => item.style.display = 'none');
-        serviceCenterNavItems.forEach(item => item.style.display = 'none';
+        serviceCenterNavItems.forEach(item => item.style.display = 'none');
         logoutBtn.style.display = 'none';
     }
 }
@@ -448,7 +562,8 @@ document.getElementById('serviceBookingForm').addEventListener('submit', async (
         displayMessage(translations[currentLanguage].service_request_success, "success");
         document.getElementById('serviceBookingForm').reset();
         document.getElementById('otherServiceTypeGroup').style.display = 'none';
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Error submitting service request:", error);
         displayMessage("Failed to submit service request: " + error.message, "error");
     }
@@ -512,7 +627,8 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
         try {
             await set(ref(db, `users/${user.uid}/profile`), profileData);
             displayMessage(translations[currentLanguage].profile_updated, "success");
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Error updating profile:", error);
             displayMessage(`Failed to update profile: ${error.message}`, "error");
         }
@@ -537,7 +653,10 @@ function renderServiceRequests() {
             // Sort requests by timestamp, newest first
             const sortedRequests = [];
             snapshot.forEach((childSnapshot) => {
-                sortedRequests.push({ id: childSnapshot.key, ...childSnapshot.val() });
+                sortedRequests.push({
+                    id: childSnapshot.key,
+                    ...childSnapshot.val()
+                });
             });
             sortedRequests.sort((a, b) => b.timestamp - a.timestamp); // Newest first
 
@@ -583,9 +702,12 @@ function renderServiceRequests() {
 // Global functions for service request actions
 window.updateServiceStatus = async (requestId, newStatus) => {
     try {
-        await update(ref(db, `serviceRequests/${requestId}`), { status: newStatus });
+        await update(ref(db, `serviceRequests/${requestId}`), {
+            status: newStatus
+        });
         displayMessage(`Request #${requestId} status updated to ${newStatus}.`, "success");
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Error updating service status:", error);
         displayMessage(`Failed to update request status: ${error.message}`, "error");
     }
@@ -593,9 +715,12 @@ window.updateServiceStatus = async (requestId, newStatus) => {
 
 window.markServiceCompleted = async (requestId) => {
     try {
-        await update(ref(db, `serviceRequests/${requestId}`), { status: 'Completed' });
+        await update(ref(db, `serviceRequests/${requestId}`), {
+            status: 'Completed'
+        });
         displayMessage(`Service #${requestId} marked as completed.`, "success");
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Error marking service completed:", error);
         displayMessage(`Failed to mark service completed: ${error.message}`, "error");
     }
@@ -615,7 +740,10 @@ function renderCustomerFeedbackDashboard() {
         if (snapshot.exists()) {
             const sortedFeedback = [];
             snapshot.forEach((childSnapshot) => {
-                sortedFeedback.push({ id: childSnapshot.key, ...childSnapshot.val() });
+                sortedFeedback.push({
+                    id: childSnapshot.key,
+                    ...childSnapshot.val()
+                });
             });
             sortedFeedback.sort((a, b) => b.timestamp - a.timestamp); // Newest first
 
@@ -655,7 +783,10 @@ function renderPaymentHistory() {
         if (snapshot.exists()) {
             const sortedPayments = [];
             snapshot.forEach((childSnapshot) => {
-                sortedPayments.push({ id: childSnapshot.key, ...childSnapshot.val() });
+                sortedPayments.push({
+                    id: childSnapshot.key,
+                    ...childSnapshot.val()
+                });
             });
             sortedPayments.sort((a, b) => b.timestamp - a.timestamp); // Newest first
 
@@ -707,7 +838,10 @@ function renderChatMessages(userId) {
                 // Assume 'customer' sends, 'serviceCenter' receives in this chat
                 messageDiv.classList.add(messageData.sender === 'customer' ? 'sent' : 'received');
 
-                const messageTime = new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const messageTime = new Date(messageData.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
 
                 messageDiv.innerHTML = `
                     <p><strong>${messageData.sender === 'customer' ? 'You' : 'Service Center'}:</strong> ${messageData.text}</p>
@@ -718,7 +852,10 @@ function renderChatMessages(userId) {
             // Scroll to the bottom of the chat after messages are loaded/updated
             chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
         } else {
-            chatMessagesContainer.innerHTML = '<div class="message received"><p><strong>Service Center:</strong> Welcome to chat! How can we assist you?</p><span class="timestamp">' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</span></div>';
+            chatMessagesContainer.innerHTML = '<div class="message received"><p><strong>Service Center:</strong> Welcome to chat! How can we assist you?</p><span class="timestamp">' + new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            }) + '</span></div>';
         }
     }, (error) => {
         console.error("Error fetching chat messages:", error);
@@ -748,7 +885,8 @@ document.getElementById('chatSendBtn').addEventListener('click', async () => {
                 timestamp: Date.now()
             });
             chatInput.value = ''; // Clear input
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Error sending message:", error);
             displayMessage("Failed to send message.", "error");
         }
@@ -786,9 +924,9 @@ document.getElementById('paymentForm').addEventListener('submit', async (e) => {
     const paymentData = {
         userId: user.uid,
         serviceId: mockServiceId, // Placeholder
-        amount: mockAmount,       // Placeholder
+        amount: mockAmount, // Placeholder
         method: document.getElementById('paymentMethod').value,
-        status: 'Completed',      // Assume completed on form submission
+        status: 'Completed', // Assume completed on form submission
         timestamp: Date.now()
     };
 
@@ -811,7 +949,8 @@ document.getElementById('paymentForm').addEventListener('submit', async (e) => {
         document.getElementById('paymentCustomerName').textContent = 'N/A';
         document.getElementById('paymentServiceType').textContent = 'N/A';
         document.getElementById('paymentAmountDue').textContent = '₹0.00';
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Error processing payment:", error);
         displayMessage(`Failed to process payment: ${error.message}`, "error");
     }
@@ -876,7 +1015,8 @@ document.getElementById('feedbackForm').addEventListener('submit', async (e) => 
             star.classList.remove('fas');
             star.classList.add('far');
         });
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Error submitting feedback:", error);
         displayMessage(`Failed to submit feedback: ${error.message}`, "error");
     }
@@ -904,7 +1044,10 @@ function renderCustomerFeedbackList() {
             snapshot.forEach((childSnapshot) => {
                 const feedbackItem = childSnapshot.val();
                 if (feedbackItem.userId === user.uid) { // Filter by current user
-                    userFeedbacks.push({ id: childSnapshot.key, ...feedbackItem });
+                    userFeedbacks.push({
+                        id: childSnapshot.key,
+                        ...feedbackItem
+                    });
                 }
             });
 
@@ -926,11 +1069,12 @@ function renderCustomerFeedbackList() {
         }
 
         if (!hasUserFeedback) {
-            customerFeedbackList.appendChild(noFeedbackMessage);
-            noFeedbackMessage.style.display = 'block';
-        } else {
-            noFeedbackMessage.style.display = 'none';
+            const messageLi = document.createElement('li');
+            messageLi.className = 'empty-message';
+            messageLi.textContent = translations[currentLanguage].no_feedback_yet || 'No feedback submitted yet.';
+            customerFeedbackList.appendChild(messageLi);
         }
+        // Removed else { noFeedbackMessage.style.display = 'none'; } because it's handled by clearing innerHTML
     });
 }
 
@@ -951,7 +1095,8 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
         await push(ref(db, 'contactMessages'), contactData);
         displayMessage(translations[currentLanguage].contact_message_sent, "success");
         document.getElementById('contactForm').reset();
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Error sending contact message:", error);
         displayMessage(`Failed to send message: ${error.message}`, "error");
     }
@@ -993,7 +1138,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Pre-fill feedback service ID if there's a recent service? (more complex)
                             // For now, leave serviceIdFeedback empty for manual input or a later auto-fill mechanism
                         }
-                    }, { onlyOnce: true });
+                    }, {
+                        onlyOnce: true
+                    });
                     // Also load customer-specific feedback if on feedback section
                     if (currentActiveSectionId === 'feedback-section') {
                         renderCustomerFeedbackList();
@@ -1001,7 +1148,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (currentUserRole === 'serviceCenter') {
                     showContentSection('service-center-dashboard'); // Redirect service center to dashboard
                 }
-            }, { onlyOnce: true }); // Fetch role once on sign-in
+            }, {
+                onlyOnce: true
+            }); // Fetch role once on sign-in
         } else {
             // User is signed out
             currentUserRole = null;
@@ -1014,3 +1163,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial translation application (before user selects, it will use default 'en')
     applyTranslations();
 });
+```
